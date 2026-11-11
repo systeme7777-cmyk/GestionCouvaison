@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "896675915881",
+    "project_id": "gestion-couvaison",
+    "storage_bucket": "gestion-couvaison.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:896675915881:android:06a2a95ce655f4cc919af8",
+        "android_client_info": {
+          "package_name": "com.gestioncouvaison.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTDioB3qnk7RQZuQuFyMt613nEQhMVnek"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
