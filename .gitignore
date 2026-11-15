@@ -11,3 +11,4 @@ android/local.properties
 android/app/release/
 *.keystore
 !android/app/ansar.keystore
+*.apk
