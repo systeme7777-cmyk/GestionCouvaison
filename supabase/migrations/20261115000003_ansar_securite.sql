@@ -1,0 +1,23 @@
+-- Durcissement : les fonctions internes ne sont pas appelables via l'API
+alter function public.ae__installer_table(text, text, text) set search_path = public;
+revoke execute on function public.ae__installer_table(text, text, text) from public, anon, authenticated;
+revoke execute on function public.ae_touch() from public, anon, authenticated;
+revoke execute on function public.ae_journaliser() from public, anon, authenticated;
+revoke execute on function public.ae_controle_vente() from public, anon, authenticated;
+revoke execute on function public.ae_controle_paiement() from public, anon, authenticated;
+revoke execute on function public.ae_production_vers_stock() from public, anon, authenticated;
+revoke execute on function public.ae_production_validation() from public, anon, authenticated;
+revoke execute on function public.ae_stock_disponible(uuid, uuid) from public, anon, authenticated;
+revoke execute on function public.ae_effectif_lot(uuid, uuid) from public, anon, authenticated;
+revoke execute on function public.ae_peut(text, text) from public, anon;
+revoke execute on function public.ae_peut_un(text[], text) from public, anon;
+revoke execute on function public.ae_est_actif() from public, anon;
+revoke execute on function public.ae_est_principal() from public, anon;
+revoke execute on function public.ae_connexion() from public, anon;
+revoke execute on function public.ae_mot_de_passe_change() from public, anon;
+grant execute on function public.ae_peut(text, text) to authenticated;
+grant execute on function public.ae_peut_un(text[], text) to authenticated;
+grant execute on function public.ae_est_actif() to authenticated;
+grant execute on function public.ae_est_principal() to authenticated;
+grant execute on function public.ae_connexion() to authenticated;
+grant execute on function public.ae_mot_de_passe_change() to authenticated;

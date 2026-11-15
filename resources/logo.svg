@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="f" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2E8B4A"/><stop offset="1" stop-color="#154D26"/>
+    </linearGradient>
+    <linearGradient id="o" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE08A"/><stop offset="1" stop-color="#F2B630"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#f)"/>
+  <!-- œuf doré -->
+  <path d="M256 70 C 352 70 418 210 418 300 C 418 392 346 448 256 448 C 166 448 94 392 94 300 C 94 210 160 70 256 70 Z" fill="url(#o)"/>
+  <!-- poule stylisée -->
+  <g fill="#1F6B35">
+    <path d="M178 330 C 178 270 222 236 270 236 C 300 236 318 226 326 206 C 334 186 352 176 370 182 C 384 187 390 200 388 214 L 404 222 L 388 230 C 386 262 372 290 352 310 C 330 334 300 352 262 356 C 224 360 190 352 178 330 Z"/>
+    <path d="M178 330 C 160 312 150 286 152 258 C 166 280 180 292 198 298 Z"/>
+    <path d="M358 182 C 356 168 364 156 376 156 C 374 164 384 166 388 174 C 380 172 370 176 358 182 Z" fill="#C0392B"/>
+    <path d="M370 232 C 374 242 372 252 364 256 C 362 246 362 238 370 232 Z" fill="#C0392B"/>
+  </g>
+  <circle cx="364" cy="204" r="7" fill="#FFF7DA"/>
+  <path d="M206 300 C 236 286 268 288 298 304 C 270 300 238 302 206 314 Z" fill="#FFF7DA" opacity=".9"/>
+  <path d="M236 356 L 230 392 M 290 352 L 296 390" stroke="#1F6B35" stroke-width="10" stroke-linecap="round"/>
+</svg>
