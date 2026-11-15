@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Gestion Couvaison</string>
+    <string name="title_activity_main">Gestion Couvaison</string>
+    <string name="package_name">com.gestioncouvaison.app</string>
+    <string name="custom_url_scheme">com.gestioncouvaison.app</string>
+</resources>
