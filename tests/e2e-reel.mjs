@@ -116,8 +116,9 @@ try {
   verifier(ep1 && /PAIEMENT_EXCESSIF/.test(ep1.message), 'Encaissement supérieur au reste dû refusé');
   const { error: ep2 } = await admin.from('ae_paiements').insert({ type: 'encaissement', vente_id: vente.id, montant: 1000, observations: MARQUE });
   verifier(!ep2, 'Encaissement partiel de la dette client accepté');
-  const { error: ed } = await emp.from('ae_ventes').update({ deleted_at: new Date().toISOString() }).eq('id', vente.id);
-  verifier(ed && /suppression non autorisée|row-level/i.test(ed.message), 'Employé sans droit « Supprimer » : suppression refusée', ed?.message);
+  const { data: dd, error: ed } = await emp.from('ae_ventes').update({ deleted_at: new Date().toISOString() }).eq('id', vente.id).select();
+  const { data: toujours } = await admin.from('ae_ventes').select('deleted_at').eq('id', vente.id).single();
+  verifier((ed || (dd ?? []).length === 0) && toujours.deleted_at === null, 'Employé sans droit « Supprimer » : suppression refusée (vente intacte)', ed?.message);
 
   // ---------------------------------------------------------------- Production -> stock
   console.log('\n[Production]');
