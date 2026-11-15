@@ -34,7 +34,7 @@ export interface LigneStock {
   disponible: number;
 }
 
-export function calculerStocks(d: Pick<Donnees, 'produits' | 'lots' | 'evenements' | 'achats' | 'ventes' | 'mouvements'>,
+export function calculerStocks(d: Pick<Donnees, 'produits' | 'lots' | 'evenements' | 'achats' | 'ventes' | 'mouvements'> & { productions?: Production[] },
   exclureVente?: string): Map<string, LigneStock> {
   const m = new Map<string, LigneStock>();
   const ligne = (id: string) => {
@@ -75,6 +75,15 @@ export function calculerStocks(d: Pick<Donnees, 'produits' | 'lots' | 'evenement
     else if (mv.type === 'perte') l.perdu += n(mv.quantite);
     else if (mv.type === 'mort') l.mort += n(mv.quantite);
     else l.correction += n(mv.quantite);
+  }
+  // Production validée sur ce téléphone mais pas encore envoyée : le serveur créera les mouvements,
+  // on les anticipe localement pour que le stock soit juste hors connexion.
+  for (const p of actifs(d.productions ?? [])) {
+    if (!p.valide || !(p as any)._attente) continue;
+    if (p.produit_oeufs_id) ligne(p.produit_oeufs_id).produit += n(p.oeufs_commercialisables);
+    if (p.produit_fecondes_id) ligne(p.produit_fecondes_id).produit += Math.max(0, n(p.oeufs_fecondes) - n(p.oeufs_couveuse));
+    if (p.produit_viande_id) ligne(p.produit_viande_id).produit += n(p.viande_kg);
+    if (p.produit_fientes_id) ligne(p.produit_fientes_id).produit += n(p.fientes_kg);
   }
   for (const l of m.values()) {
     l.disponible = arr(l.initial + l.achete + l.produit - l.vendu - l.perdu - l.mort + l.correction);

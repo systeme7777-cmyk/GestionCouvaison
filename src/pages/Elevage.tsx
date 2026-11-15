@@ -78,6 +78,8 @@ export function FormLot({ t, lot, onFermer }: { t: Tout; lot?: Lot | null; onFer
 
 export function FormEvenement({ t, lot, ev, onFermer }: { t: Tout; lot: Lot; ev?: LotEvenement | null; onFermer: () => void }) {
   const toast = useToast();
+  const { profil } = useAuth();
+  const confirmer = useConfirm();
   const [v, setV] = useState<Partial<LotEvenement>>(ev ?? { lot_id: lot.id, date: aujourdhui(), type: 'deces', quantite: 1 });
   const s = (k: keyof LotEvenement) => (x: any) => setV({ ...v, [k]: x });
   const eff = effectifLot(lot, t).actuel + (ev && ev.type !== 'naissance' && ev.type !== 'ajustement' ? Number(ev.quantite) : 0);
@@ -105,7 +107,14 @@ export function FormEvenement({ t, lot, ev, onFermer }: { t: Tout; lot: Lot; ev?
       )}
       {(v.type === 'deces' || v.type === 'reforme') && <Texte label="Cause" valeur={v.cause} onChange={s('cause')} placeholder="Ex. : maladie, chaleur…" />}
       <Zone label="Observations" valeur={v.observations} onChange={s('observations')} />
-      <button className="btn plein" onClick={valider}>Enregistrer</button>
+      <div className="actions">
+        <button className="btn" onClick={valider}>Enregistrer</button>
+        {ev && peut(profil, 'elevage', 'supprimer') && (
+          <button className="btn danger" onClick={async () => {
+            if (await confirmer('Supprimer cet évènement ? L\'effectif sera recalculé.', 'Supprimer')) { await supprimer('ae_lot_evenements', ev.id); onFermer(); }
+          }}><Trash2 size={16} />Supprimer</button>
+        )}
+      </div>
     </Feuille>
   );
 }
@@ -257,24 +266,7 @@ export function LotDetail() {
         </div>
       )}
       {form && <FormLot t={t} lot={lot} onFermer={() => setForm(false)} />}
-      {ev && <FormEvenementAvecSuppression t={t} lot={lot} ev={ev === 'nouveau' ? null : ev} onFermer={() => setEv(null)} />}
+      {ev && <FormEvenement t={t} lot={lot} ev={ev === 'nouveau' ? null : ev} onFermer={() => setEv(null)} />}
     </Page>
-  );
-}
-
-function FormEvenementAvecSuppression({ t, lot, ev, onFermer }: { t: Tout; lot: Lot; ev: LotEvenement | null; onFermer: () => void }) {
-  const { profil } = useAuth();
-  const confirmer = useConfirm();
-  return (
-    <>
-      <FormEvenement t={t} lot={lot} ev={ev} onFermer={onFermer} />
-      {ev && peut(profil, 'elevage', 'supprimer') && (
-        <div style={{ position: 'fixed', bottom: 20, left: 16, zIndex: 60 }}>
-          <button className="btn danger petit" onClick={async () => {
-            if (await confirmer('Supprimer cet évènement ?', 'Supprimer')) { await supprimer('ae_lot_evenements', ev.id); onFermer(); }
-          }}><Trash2 size={15} />Supprimer l'évènement</button>
-        </div>
-      )}
-    </>
   );
 }
