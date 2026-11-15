@@ -177,17 +177,12 @@ declare
   me text := quote_literal('{' || mods_ecriture || '}');
 begin
   execute format('alter table public.%I enable row level security', t);
-  execute format('drop trigger if exists ae_touch on public.%I', t);
   execute format('create trigger ae_touch before insert or update on public.%I
                   for each row execute function public.ae_touch(%L)', t, mods_ecriture);
-  execute format('drop trigger if exists ae_journal on public.%I', t);
   execute format('create trigger ae_journal after insert or update or delete on public.%I
                   for each row execute function public.ae_journaliser()', t);
   execute format('create index if not exists %I on public.%I (updated_at)', t || '_maj_idx', t);
 
-  execute format('drop policy if exists ae_lire on public.%I', t);
-  execute format('drop policy if exists ae_ajouter on public.%I', t);
-  execute format('drop policy if exists ae_modifier on public.%I', t);
   if mods_lecture = '*' then
     execute format('create policy ae_lire on public.%I for select to authenticated
                     using (public.ae_est_actif())', t);
@@ -479,16 +474,13 @@ select public.ae__installer_table('ae_mouvements',   'stocks',  'stocks,ventes,p
 
 -- Profils : lecture pour tout utilisateur actif ; écriture via la fonction serveur uniquement
 alter table public.ae_profils enable row level security;
-drop policy if exists ae_lire on public.ae_profils;
 create policy ae_lire on public.ae_profils for select to authenticated
   using (public.ae_est_actif() or id = auth.uid());
-drop trigger if exists ae_journal on public.ae_profils;
 create trigger ae_journal after insert or update or delete on public.ae_profils
   for each row execute function public.ae_journaliser();
 
 -- Journal : lecture si droit « historique »
 alter table public.ae_journal enable row level security;
-drop policy if exists ae_lire on public.ae_journal;
 create policy ae_lire on public.ae_journal for select to authenticated
   using (public.ae_peut('historique', 'lire'));
 
@@ -579,7 +571,6 @@ begin
   end if;
   return new;
 end $$;
-drop trigger if exists ae_controle_vente on public.ae_ventes;
 create trigger ae_controle_vente before insert or update on public.ae_ventes
   for each row execute function public.ae_controle_vente();
 
@@ -607,7 +598,6 @@ begin
   end if;
   return new;
 end $$;
-drop trigger if exists ae_controle_paiement on public.ae_paiements;
 create trigger ae_controle_paiement before insert or update on public.ae_paiements
   for each row execute function public.ae_controle_paiement();
 
@@ -641,7 +631,6 @@ begin
   end if;
   return null;
 end $$;
-drop trigger if exists ae_production_vers_stock on public.ae_productions;
 create trigger ae_production_vers_stock after insert or update on public.ae_productions
   for each row execute function public.ae_production_vers_stock();
 
@@ -657,7 +646,6 @@ begin
   end if;
   return new;
 end $$;
-drop trigger if exists ae_production_validation on public.ae_productions;
 create trigger ae_production_validation before insert or update on public.ae_productions
   for each row execute function public.ae_production_validation();
 
@@ -683,7 +671,6 @@ returns void language sql security definer set search_path = public as $$
   update ae_profils set doit_changer_mdp = false, updated_at = now() where id = auth.uid();
 $$;
 
-revoke all on function public.ae__installer_table(text, text, text) from public, anon, authenticated;
 grant execute on function public.ae_connexion() to authenticated;
 grant execute on function public.ae_mot_de_passe_change() to authenticated;
 
@@ -711,9 +698,7 @@ insert into storage.buckets (id, name, public, file_size_limit)
 values ('ae-justificatifs', 'ae-justificatifs', false, 10485760)
 on conflict (id) do nothing;
 
-drop policy if exists ae_justif_lire on storage.objects;
 create policy ae_justif_lire on storage.objects for select to authenticated
   using (bucket_id = 'ae-justificatifs' and public.ae_peut_un('{achats,depenses,finances}', 'lire'));
-drop policy if exists ae_justif_ajouter on storage.objects;
 create policy ae_justif_ajouter on storage.objects for insert to authenticated
   with check (bucket_id = 'ae-justificatifs' and public.ae_peut_un('{achats,depenses}', 'ajouter'));
