@@ -700,34 +700,52 @@ alter table public.zk_entries enable row level security;
 alter table public.zk_audit_log enable row level security;
 alter table public.zk_notifications enable row level security;
 
-drop policy if exists profiles_select on public.zk_profiles;
-create policy profiles_select on public.zk_profiles for select to authenticated
-  using (id = (select auth.uid()) or (select public.zk_is_admin()));
+do $pol$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'zk_profiles' and policyname = 'profiles_select') then
+    execute $sql$create policy profiles_select on public.zk_profiles for select to authenticated
+  using (id = (select auth.uid()) or (select public.zk_is_admin()))$sql$;
+  end if;
+end $pol$;
 
-drop policy if exists campaigns_select on public.zk_campaigns;
-create policy campaigns_select on public.zk_campaigns for select to authenticated
+do $pol$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'zk_campaigns' and policyname = 'campaigns_select') then
+    execute $sql$create policy campaigns_select on public.zk_campaigns for select to authenticated
   using (
     (select public.zk_is_admin())
     or ((select public.zk_is_active_user()) and exists (
       select 1 from public.zk_campaign_participants cp
       where cp.campaign_id = zk_campaigns.id and cp.user_id = (select auth.uid()) and cp.removed_at is null))
-  );
+  )$sql$;
+  end if;
+end $pol$;
 
-drop policy if exists participants_select on public.zk_campaign_participants;
-create policy participants_select on public.zk_campaign_participants for select to authenticated
-  using ((user_id = (select auth.uid()) and (select public.zk_is_active_user())) or (select public.zk_is_admin()));
+do $pol$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'zk_campaign_participants' and policyname = 'participants_select') then
+    execute $sql$create policy participants_select on public.zk_campaign_participants for select to authenticated
+  using ((user_id = (select auth.uid()) and (select public.zk_is_active_user())) or (select public.zk_is_admin()))$sql$;
+  end if;
+end $pol$;
 
-drop policy if exists entries_select on public.zk_entries;
-create policy entries_select on public.zk_entries for select to authenticated
-  using ((user_id = (select auth.uid()) and (select public.zk_is_active_user())) or (select public.zk_is_admin()));
+do $pol$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'zk_entries' and policyname = 'entries_select') then
+    execute $sql$create policy entries_select on public.zk_entries for select to authenticated
+  using ((user_id = (select auth.uid()) and (select public.zk_is_active_user())) or (select public.zk_is_admin()))$sql$;
+  end if;
+end $pol$;
 
-drop policy if exists audit_select on public.zk_audit_log;
-create policy audit_select on public.zk_audit_log for select to authenticated
-  using ((select public.zk_is_admin()) or (target_user = (select auth.uid()) and (select public.zk_is_active_user())));
+do $pol$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'zk_audit_log' and policyname = 'audit_select') then
+    execute $sql$create policy audit_select on public.zk_audit_log for select to authenticated
+  using ((select public.zk_is_admin()) or (target_user = (select auth.uid()) and (select public.zk_is_active_user())))$sql$;
+  end if;
+end $pol$;
 
-drop policy if exists notifications_select on public.zk_notifications;
-create policy notifications_select on public.zk_notifications for select to authenticated
-  using (user_id = (select auth.uid()));
+do $pol$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'zk_notifications' and policyname = 'notifications_select') then
+    execute $sql$create policy notifications_select on public.zk_notifications for select to authenticated
+  using (user_id = (select auth.uid()))$sql$;
+  end if;
+end $pol$;
 
 -- Droits : lecture seule pour les comptes connectés, rien pour les anonymes
 revoke all on public.zk_profiles, public.zk_campaigns, public.zk_campaign_participants,
