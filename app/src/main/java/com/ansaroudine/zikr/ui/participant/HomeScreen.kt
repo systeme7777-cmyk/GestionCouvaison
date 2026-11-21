@@ -86,7 +86,7 @@ class HomeViewModel(private val c: AppContainer, private val userId: String) : V
     init {
         load()
         viewModelScope.launch {
-            c.client.tableChanges("campaign_participants", "user_id", userId).collect { action ->
+            c.client.tableChanges("zk_campaign_participants", "user_id", userId).collect { action ->
                 when (action) {
                     is PostgresAction.Update -> {
                         val p = runCatching { action.decodeRecord<Participation>() }.getOrNull() ?: return@collect
@@ -102,7 +102,7 @@ class HomeViewModel(private val c: AppContainer, private val userId: String) : V
             }
         }
         viewModelScope.launch {
-            c.client.tableChanges("campaigns").collect { action ->
+            c.client.tableChanges("zk_campaigns").collect { action ->
                 if (action is PostgresAction.Update) {
                     val camp = runCatching { action.decodeRecord<com.ansaroudine.zikr.data.Campaign>() }.getOrNull() ?: return@collect
                     if (!c.sync.isInflight(camp.id)) {

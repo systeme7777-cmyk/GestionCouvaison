@@ -174,7 +174,7 @@ class CampaignListViewModel(private val c: AppContainer, private val filter: Str
 }) {
     init {
         viewModelScope.launch {
-            c.client.tableChanges("campaigns").collect { action ->
+            c.client.tableChanges("zk_campaigns").collect { action ->
                 if (action is PostgresAction.Update) {
                     val camp = runCatching { action.decodeRecord<Campaign>() }.getOrNull() ?: return@collect
                     _state.update { s -> s.copy(items = s.items.map { if (it.id == camp.id) camp else it }) }
@@ -433,7 +433,7 @@ class CampaignDetailViewModel(private val c: AppContainer, private val id: Strin
     init {
         load()
         viewModelScope.launch {
-            c.client.tableChanges("campaigns", "id", id).collect { action ->
+            c.client.tableChanges("zk_campaigns", "id", id).collect { action ->
                 if (action is PostgresAction.Update) {
                     val camp = runCatching { action.decodeRecord<Campaign>() }.getOrNull() ?: return@collect
                     _state.update { it.copy(campaign = camp) }
@@ -442,7 +442,7 @@ class CampaignDetailViewModel(private val c: AppContainer, private val id: Strin
             }
         }
         viewModelScope.launch {
-            c.client.tableChanges("campaign_participants", "campaign_id", id).collect { action ->
+            c.client.tableChanges("zk_campaign_participants", "campaign_id", id).collect { action ->
                 when (action) {
                     is PostgresAction.Update -> {
                         val p = runCatching { action.decodeRecord<Participation>() }.getOrNull() ?: return@collect

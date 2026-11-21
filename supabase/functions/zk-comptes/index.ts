@@ -85,14 +85,14 @@ function translateAuthError(message: string): string {
 }
 
 async function getProfile(admin: SupabaseClient, id: string): Promise<Profile> {
-  const { data, error } = await admin.from("profiles").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await admin.from("zk_profiles").select("*").eq("id", id).maybeSingle();
   if (error) throw new Error(error.message);
   if (!data || data.deleted_at) throw new AppError("Compte introuvable.");
   return data as Profile;
 }
 
 async function usernameTaken(admin: SupabaseClient, username: string, exceptId?: string): Promise<boolean> {
-  let q = admin.from("profiles").select("id").eq("username", username).is("deleted_at", null);
+  let q = admin.from("zk_profiles").select("id").eq("username", username).is("deleted_at", null);
   if (exceptId) q = q.neq("id", exceptId);
   const { data, error } = await q.limit(1);
   if (error) throw new Error(error.message);
@@ -106,7 +106,7 @@ async function audit(
   target: string | null,
   details: Record<string, unknown> = {},
 ) {
-  await admin.rpc("log_audit", {
+  await admin.rpc("zk_log_audit", {
     p_actor: actor,
     p_action: action,
     p_target: target,
@@ -116,11 +116,11 @@ async function audit(
 }
 
 async function notifyUser(admin: SupabaseClient, user: string, type: string, title: string, body: string) {
-  await admin.rpc("notify_user", { p_user: user, p_type: type, p_title: title, p_body: body, p_data: {} });
+  await admin.rpc("zk_notify_user", { p_user: user, p_type: type, p_title: title, p_body: body, p_data: {} });
 }
 
 async function notifyAdmins(admin: SupabaseClient, type: string, title: string, body: string, except: string | null) {
-  await admin.rpc("notify_admins", { p_type: type, p_title: title, p_body: body, p_data: {}, p_except: except });
+  await admin.rpc("zk_notify_admins", { p_type: type, p_title: title, p_body: body, p_data: {}, p_except: except });
 }
 
 // Vérifie que l'auteur a le droit d'agir sur le compte ciblé
@@ -151,7 +151,7 @@ async function createAccount(
   });
   if (error || !created?.user) throw new AppError(translateAuthError(error?.message ?? ""));
 
-  const { data: profile, error: pErr } = await admin.from("profiles").insert({
+  const { data: profile, error: pErr } = await admin.from("zk_profiles").insert({
     id: created.user.id,
     username: input.username,
     full_name: input.full_name,
@@ -193,7 +193,7 @@ Deno.serve(async (req: Request) => {
     // Possible une seule fois, tant qu'aucun propriétaire n'existe.
     // -----------------------------------------------------------------
     if (action === "bootstrap_owner") {
-      const { data: exists, error } = await admin.rpc("owner_exists");
+      const { data: exists, error } = await admin.rpc("zk_owner_exists");
       if (error) throw new Error(error.message);
       if (exists) throw new AppError("L'application est déjà configurée. Connectez-vous avec votre compte.");
       const profile = await createAccount(admin, {
@@ -216,7 +216,7 @@ Deno.serve(async (req: Request) => {
     const { data: authData, error: authErr } = await admin.auth.getUser(token);
     if (authErr || !authData?.user) return reply({ ok: false, error: "Session expirée. Veuillez vous reconnecter." }, 401);
 
-    const { data: actorRow } = await admin.from("profiles").select("*").eq("id", authData.user.id).maybeSingle();
+    const { data: actorRow } = await admin.from("zk_profiles").select("*").eq("id", authData.user.id).maybeSingle();
     const actor = actorRow as Profile | null;
     if (!actor || actor.deleted_at || !actor.is_active) {
       return reply({ ok: false, error: "Votre compte est désactivé." }, 403);
@@ -273,7 +273,7 @@ Deno.serve(async (req: Request) => {
           });
           if (error) throw new AppError(translateAuthError(error.message));
         }
-        const { data, error } = await admin.from("profiles").update({
+        const { data, error } = await admin.from("zk_profiles").update({
           username,
           full_name: fullName,
           phone,
@@ -294,7 +294,7 @@ Deno.serve(async (req: Request) => {
         const password = checkPassword(body.password);
         const { error } = await admin.auth.admin.updateUserById(target.id, { password });
         if (error) throw new AppError(translateAuthError(error.message));
-        await admin.from("profiles").update({ must_change_password: true, updated_at: new Date().toISOString() })
+        await admin.from("zk_profiles").update({ must_change_password: true, updated_at: new Date().toISOString() })
           .eq("id", target.id);
         await audit(admin, actor.id, "mot_de_passe_reinitialise", target.id, {});
         return reply({ ok: true });
@@ -308,7 +308,7 @@ Deno.serve(async (req: Request) => {
           ban_duration: active ? "none" : BAN_FOREVER,
         });
         if (error) throw new Error(error.message);
-        const { data, error: uErr } = await admin.from("profiles")
+        const { data, error: uErr } = await admin.from("zk_profiles")
           .update({ is_active: active, updated_at: new Date().toISOString() })
           .eq("id", target.id).select("*").single();
         if (uErr) throw new Error(uErr.message);
@@ -328,7 +328,7 @@ Deno.serve(async (req: Request) => {
         }
         const role = checkRole(body.role);
         if (role === target.role) return reply({ ok: true, user: target });
-        const { data, error } = await admin.from("profiles")
+        const { data, error } = await admin.from("zk_profiles")
           .update({ role, updated_at: new Date().toISOString() })
           .eq("id", target.id).select("*").single();
         if (error) throw new Error(error.message);
@@ -353,7 +353,7 @@ Deno.serve(async (req: Request) => {
         const now = new Date().toISOString();
 
         // Le profil est conservé (marqué supprimé) pour garder l'historique des décomptes
-        const { error: pErr } = await admin.from("profiles").update({
+        const { error: pErr } = await admin.from("zk_profiles").update({
           deleted_at: now,
           is_active: false,
           username: `supprime-${target.id}`,
@@ -361,15 +361,15 @@ Deno.serve(async (req: Request) => {
         }).eq("id", target.id);
         if (pErr) throw new Error(pErr.message);
 
-        const { data: parts } = await admin.from("campaign_participants")
+        const { data: parts } = await admin.from("zk_campaign_participants")
           .update({ removed_at: now, updated_at: now })
           .eq("user_id", target.id).is("removed_at", null)
           .select("campaign_id");
         for (const p of parts ?? []) {
-          const { count } = await admin.from("campaign_participants")
+          const { count } = await admin.from("zk_campaign_participants")
             .select("*", { count: "exact", head: true })
             .eq("campaign_id", p.campaign_id).is("removed_at", null);
-          await admin.from("campaigns").update({ participants_count: count ?? 0 }).eq("id", p.campaign_id);
+          await admin.from("zk_campaigns").update({ participants_count: count ?? 0 }).eq("id", p.campaign_id);
         }
 
         const { error } = await admin.auth.admin.deleteUser(target.id);

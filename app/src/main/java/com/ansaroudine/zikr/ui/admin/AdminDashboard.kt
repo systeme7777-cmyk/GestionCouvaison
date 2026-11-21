@@ -71,7 +71,7 @@ class DashboardViewModel(private val c: AppContainer) : ViewModel() {
     init {
         load()
         viewModelScope.launch {
-            c.client.tableChanges("campaigns").collect { action ->
+            c.client.tableChanges("zk_campaigns").collect { action ->
                 when (action) {
                     is PostgresAction.Update -> {
                         val camp = runCatching { action.decodeRecord<Campaign>() }.getOrNull() ?: return@collect

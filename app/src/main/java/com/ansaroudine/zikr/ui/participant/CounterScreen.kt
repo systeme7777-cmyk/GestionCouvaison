@@ -169,7 +169,7 @@ class CounterViewModel(private val c: AppContainer, private val campaignId: Stri
     init {
         load()
         viewModelScope.launch {
-            c.client.tableChanges("campaigns", "id", campaignId).collect { action ->
+            c.client.tableChanges("zk_campaigns", "id", campaignId).collect { action ->
                 if (action is PostgresAction.Update) {
                     val camp = runCatching { action.decodeRecord<Campaign>() }.getOrNull() ?: return@collect
                     base.update { it.copy(campaign = camp) }
@@ -178,7 +178,7 @@ class CounterViewModel(private val c: AppContainer, private val campaignId: Stri
             }
         }
         viewModelScope.launch {
-            c.client.tableChanges("campaign_participants", "user_id", userId).collect { action ->
+            c.client.tableChanges("zk_campaign_participants", "user_id", userId).collect { action ->
                 if (action is PostgresAction.Update) {
                     val p = runCatching { action.decodeRecord<Participation>() }.getOrNull() ?: return@collect
                     if (p.campaignId != campaignId) return@collect

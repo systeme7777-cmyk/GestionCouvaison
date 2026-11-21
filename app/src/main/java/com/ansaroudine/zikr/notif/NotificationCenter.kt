@@ -83,7 +83,7 @@ class NotificationCenter(
             }
             refreshUnread()
             catchUp(userId)
-            client.tableChanges("notifications", "user_id", userId).collect { action ->
+            client.tableChanges("zk_notifications", "user_id", userId).collect { action ->
                 when (action) {
                     is PostgresAction.Insert -> {
                         val n = runCatching { action.decodeRecord<AppNotification>() }.getOrNull()

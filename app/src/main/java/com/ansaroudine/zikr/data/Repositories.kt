@@ -36,7 +36,7 @@ class AuthRepository(private val client: SupabaseClient) {
     val currentUserId: String? get() = client.auth.currentUserOrNull()?.id
 
     suspend fun ownerExists(): Boolean =
-        client.postgrest.rpc("owner_exists").decodeAs<Boolean>()
+        client.postgrest.rpc("zk_owner_exists").decodeAs<Boolean>()
 
     suspend fun signIn(username: String, password: String) {
         client.auth.signInWith(Email) {
@@ -69,14 +69,14 @@ class AuthRepository(private val client: SupabaseClient) {
     /** Recharge le profil du compte connecté (null si aucun profil). */
     suspend fun loadProfile(): Profile? {
         val uid = currentUserId ?: run { _profile.value = null; return null }
-        val p = client.from("profiles").select { filter { eq("id", uid) } }.decodeSingleOrNull<Profile>()
+        val p = client.from("zk_profiles").select { filter { eq("id", uid) } }.decodeSingleOrNull<Profile>()
         _profile.value = p
         return p
     }
 
     suspend fun changePassword(newPassword: String) {
         client.auth.updateUser { password = newPassword }
-        client.postgrest.rpc("password_changed")
+        client.postgrest.rpc("zk_password_changed")
         loadProfile()
     }
 
@@ -92,7 +92,7 @@ class AuthRepository(private val client: SupabaseClient) {
 class ZikrRepository(private val client: SupabaseClient) {
 
     suspend fun myParticipations(userId: String): List<Participation> =
-        client.from("campaign_participants").select(Columns.raw("*, campaigns(*)")) {
+        client.from("zk_campaign_participants").select(Columns.raw("*, campaigns:zk_campaigns(*)")) {
             filter {
                 eq("user_id", userId)
                 exact("removed_at", null)
@@ -101,7 +101,7 @@ class ZikrRepository(private val client: SupabaseClient) {
         }.decodeList()
 
     suspend fun participation(campaignId: String, userId: String): Participation? =
-        client.from("campaign_participants").select(Columns.raw("*, campaigns(*)")) {
+        client.from("zk_campaign_participants").select(Columns.raw("*, campaigns:zk_campaigns(*)")) {
             filter {
                 eq("campaign_id", campaignId)
                 eq("user_id", userId)
@@ -109,12 +109,12 @@ class ZikrRepository(private val client: SupabaseClient) {
         }.decodeSingleOrNull()
 
     suspend fun campaign(id: String): Campaign? =
-        client.from("campaigns").select { filter { eq("id", id) } }.decodeSingleOrNull()
+        client.from("zk_campaigns").select { filter { eq("id", id) } }.decodeSingleOrNull()
 
     /** filter : "active", "upcoming", "finished" ou "all" */
     suspend fun campaigns(filter: String, search: String, page: Int): List<Campaign> {
         val today = LocalDate.now().toString()
-        return client.from("campaigns").select {
+        return client.from("zk_campaigns").select {
             filter {
                 when (filter) {
                     "active" -> {
@@ -147,8 +147,8 @@ class ZikrRepository(private val client: SupabaseClient) {
     }
 
     suspend fun campaignParticipants(campaignId: String): List<Participation> =
-        client.from("campaign_participants")
-            .select(Columns.raw("*, profiles!campaign_participants_user_id_fkey(id, full_name, username)")) {
+        client.from("zk_campaign_participants")
+            .select(Columns.raw("*, profiles:zk_profiles!zk_campaign_participants_user_id_fkey(id, full_name, username)")) {
                 filter {
                     eq("campaign_id", campaignId)
                     exact("removed_at", null)
@@ -159,15 +159,15 @@ class ZikrRepository(private val client: SupabaseClient) {
     suspend fun userParticipations(userId: String): List<Participation> = myParticipations(userId)
 
     suspend fun addZikr(campaignId: String, amount: Int, clientId: String): AddZikrResult =
-        client.postgrest.rpc("add_zikr", buildJsonObject {
+        client.postgrest.rpc("zk_add_zikr", buildJsonObject {
             put("p_campaign", campaignId)
             put("p_amount", amount)
             put("p_client_id", clientId)
         }).decodeAs()
 
     suspend fun entries(userId: String?, campaignId: String?, page: Int): List<ZikrEntry> =
-        client.from("zikr_entries").select(
-            Columns.raw("*, campaigns(id, title, zikr_type), profiles(id, full_name, username)")
+        client.from("zk_entries").select(
+            Columns.raw("*, campaigns:zk_campaigns(id, title, zikr_type), profiles:zk_profiles(id, full_name, username)")
         ) {
             filter {
                 if (userId != null) eq("user_id", userId)
@@ -178,13 +178,13 @@ class ZikrRepository(private val client: SupabaseClient) {
         }.decodeList()
 
     suspend fun dailyStats(campaignId: String, days: Int, userId: String? = null): List<DailyStat> =
-        client.postgrest.rpc("campaign_daily_stats", buildJsonObject {
+        client.postgrest.rpc("zk_campaign_daily_stats", buildJsonObject {
             put("p_campaign", campaignId)
             put("p_days", days)
             if (userId != null) put("p_user", userId)
         }).decodeList()
 
-    suspend fun myOverview(): MyOverview = client.postgrest.rpc("my_overview").decodeAs()
+    suspend fun myOverview(): MyOverview = client.postgrest.rpc("zk_my_overview").decodeAs()
 
     suspend fun auditForUser(userId: String, page: Int): List<AuditEntry> = audit(page) { eq("target_user", userId) }
 
@@ -196,11 +196,11 @@ class ZikrRepository(private val client: SupabaseClient) {
         page: Int,
         block: io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder.() -> Unit,
     ): List<AuditEntry> =
-        client.from("audit_log").select(
+        client.from("zk_audit_log").select(
             Columns.raw(
-                "*, actor:profiles!audit_log_actor_id_fkey(id, full_name, username), " +
-                    "target:profiles!audit_log_target_user_fkey(id, full_name, username), " +
-                    "campaign:campaigns(id, title, zikr_type)"
+                "*, actor:zk_profiles!zk_audit_log_actor_id_fkey(id, full_name, username), " +
+                    "target:zk_profiles!zk_audit_log_target_user_fkey(id, full_name, username), " +
+                    "campaign:zk_campaigns(id, title, zikr_type)"
             )
         ) {
             filter(block)
@@ -214,11 +214,11 @@ class ZikrRepository(private val client: SupabaseClient) {
 // =====================================================================
 class AdminRepository(private val client: SupabaseClient) {
 
-    suspend fun overview(): AdminOverview = client.postgrest.rpc("admin_overview").decodeAs()
+    suspend fun overview(): AdminOverview = client.postgrest.rpc("zk_admin_overview").decodeAs()
 
     /** filter : "all", "participants", "admins", "inactive" */
     suspend fun members(search: String, filter: String, page: Int, pageSize: Int = PAGE_SIZE): List<Profile> =
-        client.from("profiles").select {
+        client.from("zk_profiles").select {
             filter {
                 exact("deleted_at", null)
                 when (filter) {
@@ -243,7 +243,7 @@ class AdminRepository(private val client: SupabaseClient) {
         val result = mutableListOf<Profile>()
         var page = 0
         while (true) {
-            val chunk = client.from("profiles").select {
+            val chunk = client.from("zk_profiles").select {
                 filter {
                     exact("deleted_at", null)
                     eq("is_active", true)
@@ -259,7 +259,7 @@ class AdminRepository(private val client: SupabaseClient) {
     }
 
     suspend fun member(id: String): Profile? =
-        client.from("profiles").select { filter { eq("id", id) } }.decodeSingleOrNull()
+        client.from("zk_profiles").select { filter { eq("id", id) } }.decodeSingleOrNull()
 
     suspend fun createMember(fullName: String, username: String, phone: String, password: String, role: String): Profile =
         invokeAdminFunction(client, buildJsonObject {
@@ -315,14 +315,14 @@ class AdminRepository(private val client: SupabaseClient) {
     suspend fun createCampaign(
         title: String, zikrType: String, description: String,
         start: LocalDate, end: LocalDate?, goal: Long,
-    ): String = client.postgrest.rpc("create_campaign", campaignParams(title, zikrType, description, start, end, goal))
+    ): String = client.postgrest.rpc("zk_create_campaign", campaignParams(title, zikrType, description, start, end, goal))
         .decodeAs()
 
     suspend fun updateCampaign(
         id: String, title: String, zikrType: String, description: String,
         start: LocalDate, end: LocalDate?, goal: Long,
     ) {
-        client.postgrest.rpc("update_campaign", buildJsonObject {
+        client.postgrest.rpc("zk_update_campaign", buildJsonObject {
             put("p_id", id)
             campaignParams(title, zikrType, description, start, end, goal).forEach { (k, v) -> put(k, v) }
         })
@@ -341,24 +341,24 @@ class AdminRepository(private val client: SupabaseClient) {
     }
 
     suspend fun setCampaignStatus(id: String, status: String) {
-        client.postgrest.rpc("set_campaign_status", buildJsonObject {
+        client.postgrest.rpc("zk_set_campaign_status", buildJsonObject {
             put("p_id", id)
             put("p_status", status)
         })
     }
 
     suspend fun deleteCampaign(id: String) {
-        client.postgrest.rpc("delete_campaign", buildJsonObject { put("p_id", id) })
+        client.postgrest.rpc("zk_delete_campaign", buildJsonObject { put("p_id", id) })
     }
 
     suspend fun setParticipants(campaignId: String, items: List<ParticipantGoal>): JsonObject =
-        client.postgrest.rpc("set_campaign_participants", buildJsonObject {
+        client.postgrest.rpc("zk_set_campaign_participants", buildJsonObject {
             put("p_campaign", campaignId)
             putJsonArray("p_items") { items.forEach { add(AppJson.encodeToJsonElement(it)) } }
         }).decodeAs()
 
     suspend fun updateGoal(campaignId: String, userId: String, goal: Long) {
-        client.postgrest.rpc("update_participant_goal", buildJsonObject {
+        client.postgrest.rpc("zk_update_participant_goal", buildJsonObject {
             put("p_campaign", campaignId)
             put("p_user", userId)
             put("p_goal", goal)
@@ -372,14 +372,14 @@ class AdminRepository(private val client: SupabaseClient) {
 class NotificationRepository(private val client: SupabaseClient) {
 
     suspend fun list(userId: String, page: Int): List<AppNotification> =
-        client.from("notifications").select {
+        client.from("zk_notifications").select {
             filter { eq("user_id", userId) }
             order("id", Order.DESCENDING)
             range(page * PAGE_SIZE.toLong(), (page + 1) * PAGE_SIZE.toLong() - 1)
         }.decodeList()
 
     suspend fun newerThan(userId: String, lastId: Long): List<AppNotification> =
-        client.from("notifications").select {
+        client.from("zk_notifications").select {
             filter {
                 eq("user_id", userId)
                 gt("id", lastId)
@@ -390,14 +390,14 @@ class NotificationRepository(private val client: SupabaseClient) {
         }.decodeList()
 
     suspend fun latestId(userId: String): Long =
-        client.from("notifications").select(Columns.list("id")) {
+        client.from("zk_notifications").select(Columns.list("id")) {
             filter { eq("user_id", userId) }
             order("id", Order.DESCENDING)
             limit(1)
         }.decodeList<IdOnly>().firstOrNull()?.id ?: 0L
 
     suspend fun unreadCount(userId: String): Long =
-        client.from("notifications").select {
+        client.from("zk_notifications").select {
             filter {
                 eq("user_id", userId)
                 exact("read_at", null)
@@ -407,7 +407,7 @@ class NotificationRepository(private val client: SupabaseClient) {
         }.countOrNull() ?: 0L
 
     suspend fun markRead(ids: List<Long>?) {
-        client.postgrest.rpc("mark_notifications_read", buildJsonObject {
+        client.postgrest.rpc("zk_mark_notifications_read", buildJsonObject {
             if (ids != null) putJsonArray("p_ids") { ids.forEach { add(kotlinx.serialization.json.JsonPrimitive(it)) } }
         })
     }
@@ -424,7 +424,7 @@ suspend fun invokeAdminFunction(
     body: JsonObject,
 ): FunctionResult {
     val response = try {
-        client.functions.invoke(function = "admin-users") {
+        client.functions.invoke(function = "zk-comptes") {
             contentType(ContentType.Application.Json)
             setBody(AppJson.encodeToString(JsonObject.serializer(), body))
         }

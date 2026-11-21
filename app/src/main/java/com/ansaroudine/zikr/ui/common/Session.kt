@@ -105,7 +105,7 @@ class SessionViewModel(private val c: AppContainer) : ViewModel() {
     private fun watchProfile(uid: String) {
         profileWatch?.cancel()
         profileWatch = viewModelScope.launch {
-            c.client.tableChanges("profiles", "id", uid).collect { action ->
+            c.client.tableChanges("zk_profiles", "id", uid).collect { action ->
                 if (action is PostgresAction.Update) {
                     val p = runCatching { action.decodeRecord<Profile>() }.getOrNull() ?: return@collect
                     if (p.deletedAt != null || !p.isActive) {
