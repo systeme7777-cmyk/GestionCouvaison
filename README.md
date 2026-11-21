@@ -68,11 +68,20 @@ supabase/
 - Test de charge : 50 participants simultanés, 2 000 envois en moins de 3 secondes, totaux parfaitement cohérents.
 - Listes paginées et recherche indexée (trigrammes) pour des centaines de participants.
 
-## Installation du serveur Supabase
+## Installer l'application
 
-1. Appliquer `supabase/migrations/20261121000001_schema.sql` au projet.
-2. Déployer la fonction `supabase/functions/admin-users` (vérification JWT désactivée : la fonction vérifie elle-même la session).
-3. Renseigner l'URL du projet et la clé publique dans `supabase.properties`.
+Téléchargez `release/ANSAROUDINE-ZIKR-1.0.0.apk` sur le téléphone et ouvrez-le (autorisez l'installation
+d'applications de cette source si Android le demande). Au premier lancement, appuyez sur
+« Configurer l'application » pour créer le compte de l'administrateur principal.
+
+## Serveur Supabase
+
+L'application est installée dans le projet Supabase « Gestion », à côté des autres applications :
+tous ses objets portent le préfixe `zk_` et n'interfèrent pas avec l'existant.
+
+1. Script : `supabase/migrations/20261121000001_schema.sql` (rejouable sans risque).
+2. Fonction Edge : `supabase/functions/zk-comptes` (vérification JWT désactivée : la fonction vérifie elle-même la session).
+3. URL du projet et clé publique : `supabase.properties`.
 
 ## Construction de l'APK
 
