@@ -199,6 +199,12 @@ returns boolean language sql stable security definer set search_path = '' as $$
   select exists (select 1 from public.profiles where is_owner and deleted_at is null);
 $$;
 
+-- Nombre au format français : 100000 -> « 100 000 »
+create or replace function public.fr_num(n bigint)
+returns text language sql immutable set search_path = '' as $$
+  select case when n < 0 then '-' else '' end || regexp_replace(abs(n)::text, '(\d)(?=(\d{3})+$)', '\1 ', 'g');
+$$;
+
 -- Journalisation interne
 create or replace function public.log_audit(
   p_actor uuid, p_action text, p_target uuid, p_campaign uuid, p_details jsonb default '{}'::jsonb)
@@ -269,7 +275,7 @@ begin
     jsonb_build_object('titre', btrim(p_title), 'type', btrim(p_zikr_type), 'objectif', p_global_goal));
 
   perform public.notify_admins('campagne_creee', 'Nouvelle campagne',
-    format('%s a créé la campagne « %s » (%s %s).', v_name, btrim(p_title), p_global_goal, btrim(p_zikr_type)),
+    format('%s a créé la campagne « %s » (%s %s).', v_name, btrim(p_title), public.fr_num(p_global_goal), btrim(p_zikr_type)),
     jsonb_build_object('campaign_id', v_id), v_uid);
 
   return v_id;
@@ -391,7 +397,7 @@ begin
       v_added := v_added + 1;
       perform public.log_audit(v_uid, 'participant_ajoute', v_user, p_campaign, jsonb_build_object('objectif', v_goal));
       perform public.notify_user(v_user, 'ajout_campagne', 'Nouvelle campagne de Zikr',
-        format('Vous participez à la campagne « %s » (%s). Votre objectif : %s.', v_c.title, v_c.zikr_type, v_goal),
+        format('Vous participez à la campagne « %s » (%s). Votre objectif : %s.', v_c.title, v_c.zikr_type, public.fr_num(v_goal)),
         jsonb_build_object('campaign_id', p_campaign));
     elsif v_existing.removed_at is not null then
       update public.campaign_participants
@@ -401,7 +407,7 @@ begin
       v_added := v_added + 1;
       perform public.log_audit(v_uid, 'participant_reintegre', v_user, p_campaign, jsonb_build_object('objectif', v_goal));
       perform public.notify_user(v_user, 'ajout_campagne', 'Campagne de Zikr',
-        format('Vous participez de nouveau à la campagne « %s ». Votre objectif : %s.', v_c.title, v_goal),
+        format('Vous participez de nouveau à la campagne « %s ». Votre objectif : %s.', v_c.title, public.fr_num(v_goal)),
         jsonb_build_object('campaign_id', p_campaign));
     elsif v_existing.personal_goal <> v_goal then
       update public.campaign_participants
@@ -413,7 +419,7 @@ begin
       perform public.log_audit(v_uid, 'objectif_modifie', v_user, p_campaign,
         jsonb_build_object('avant', v_existing.personal_goal, 'apres', v_goal));
       perform public.notify_user(v_user, 'objectif_modifie', 'Objectif modifié',
-        format('Votre objectif pour « %s » est maintenant de %s.', v_c.title, v_goal),
+        format('Votre objectif pour « %s » est maintenant de %s.', v_c.title, public.fr_num(v_goal)),
         jsonb_build_object('campaign_id', p_campaign));
     end if;
   end loop;
@@ -468,7 +474,7 @@ begin
   perform public.log_audit(v_uid, 'objectif_modifie', p_user, p_campaign,
     jsonb_build_object('avant', v_old.personal_goal, 'apres', p_goal));
   perform public.notify_user(p_user, 'objectif_modifie', 'Objectif modifié',
-    format('Votre objectif pour « %s » est maintenant de %s.', v_title, p_goal),
+    format('Votre objectif pour « %s » est maintenant de %s.', v_title, public.fr_num(p_goal)),
     jsonb_build_object('campaign_id', p_campaign));
 end $$;
 
@@ -557,10 +563,10 @@ begin
   if v_just_completed then
     select full_name into v_name from public.profiles where id = v_uid;
     perform public.notify_user(v_uid, 'objectif_personnel_atteint', 'Objectif atteint, Machallah !',
-      format('Vous avez atteint votre objectif de %s pour « %s ». Qu''Allah l''accepte.', v_p.personal_goal, v_c.title),
+      format('Vous avez atteint votre objectif de %s pour « %s ». Qu''Allah l''accepte.', public.fr_num(v_p.personal_goal), v_c.title),
       jsonb_build_object('campaign_id', p_campaign));
     perform public.notify_admins('objectif_personnel_atteint', 'Objectif personnel atteint',
-      format('%s a atteint son objectif de %s pour « %s ».', v_name, v_p.personal_goal, v_c.title),
+      format('%s a atteint son objectif de %s pour « %s ».', v_name, public.fr_num(v_p.personal_goal), v_c.title),
       jsonb_build_object('campaign_id', p_campaign, 'user_id', v_uid), v_uid);
     perform public.log_audit(v_uid, 'objectif_personnel_atteint', v_uid, p_campaign,
       jsonb_build_object('objectif', v_p.personal_goal));
@@ -569,7 +575,7 @@ begin
   if v_goal_reached then
     insert into public.notifications (user_id, type, title, body, data)
     select distinct pr.id, 'objectif_global_atteint', 'Objectif global atteint, Alhamdoulillah !',
-      format('La campagne « %s » a atteint son objectif de %s %s.', v_c.title, v_c.global_goal, v_c.zikr_type),
+      format('La campagne « %s » a atteint son objectif de %s %s.', v_c.title, public.fr_num(v_c.global_goal), v_c.zikr_type),
       jsonb_build_object('campaign_id', p_campaign)
     from public.profiles pr
     where pr.is_active and pr.deleted_at is null

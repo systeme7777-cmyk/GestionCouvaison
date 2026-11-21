@@ -345,13 +345,15 @@ fun CounterScreen(campaignId: String, userId: String, onBack: () -> Unit) {
                         enabled = active,
                         modifier = Modifier.weight(1f).height(52.dp),
                         shape = RoundedCornerShape(14.dp),
-                    ) { Text("+$n", style = MaterialTheme.typography.titleMedium) }
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp),
+                    ) { Text("+$n", style = MaterialTheme.typography.titleMedium, maxLines = 1, softWrap = false) }
                 }
                 FilledTonalButton(
                     onClick = { showCustom = true },
                     enabled = active,
                     modifier = Modifier.weight(1f).height(52.dp),
                     shape = RoundedCornerShape(14.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp),
                 ) { Icon(Icons.Default.Edit, "Valeur personnalisée") }
             }
             Spacer(Modifier.height(10.dp))

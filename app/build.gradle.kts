@@ -61,6 +61,15 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
         }
+        // Variante de recette : identique à la production (R8, optimisations), signée avec la clé de débogage,
+        // autorisée à joindre un serveur Supabase de test local
+        create("qa") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".qa"
+            versionNameSuffix = "-qa"
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+        }
     }
 
     compileOptions {
@@ -78,6 +87,12 @@ android {
     packaging {
         resources {
             excludes += setOf("/META-INF/{AL2.0,LGPL2.1}", "META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
+        }
+    }
+    sourceSets {
+        getByName("qa") {
+            manifest.srcFile("src/debug/AndroidManifest.xml")
+            res.srcDirs("src/debug/res")
         }
     }
     testOptions {

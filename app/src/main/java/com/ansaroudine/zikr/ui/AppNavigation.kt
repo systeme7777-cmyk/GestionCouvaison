@@ -157,7 +157,7 @@ private object Routes {
 }
 
 private enum class Tab(val label: String, val icon: ImageVector) {
-    DASHBOARD("Tableau de bord", Icons.Default.Dashboard),
+    DASHBOARD("Accueil", Icons.Default.Dashboard),
     CAMPAIGNS("Campagnes", Icons.Default.Campaign),
     MEMBERS("Membres", Icons.Default.Groups),
     MY_ZIKR("Mon Zikr", Icons.Default.VolunteerActivism),
@@ -239,7 +239,7 @@ private fun MainTabs(profile: Profile, session: SessionViewModel, nav: NavHostCo
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (selected == Tab.HOME || selected == Tab.DASHBOARD) "ANSAROUDINE ZIKR" else selected.label) },
+                title = { Text(when (selected) { Tab.HOME -> "ANSAROUDINE ZIKR"; Tab.DASHBOARD -> "Tableau de bord"; else -> selected.label }) },
                 actions = {
                     if (selected != Tab.NOTIFICATIONS) {
                         IconButton(onClick = { if (profile.isAdmin) nav.navigate(Routes.NOTIFICATIONS) else selectedName = Tab.NOTIFICATIONS.name }) {
@@ -261,7 +261,7 @@ private fun MainTabs(profile: Profile, session: SessionViewModel, nav: NavHostCo
                             if (t == Tab.NOTIFICATIONS && unread > 0) BadgedBox(badge = { Badge { Text(unread.coerceAtMost(99).toString()) } }) { Icon(t.icon, null) }
                             else Icon(t.icon, null)
                         },
-                        label = { Text(t.label, maxLines = 1, style = MaterialTheme.typography.labelSmall) },
+                        label = { Text(t.label, maxLines = 1, softWrap = false, style = MaterialTheme.typography.labelSmall) },
                     )
                 }
             }
