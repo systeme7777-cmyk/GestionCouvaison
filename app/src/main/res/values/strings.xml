@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ANSAROUDINE ZIKR</string>
+    <string name="channel_general">Activité des campagnes</string>
+    <string name="channel_general_desc">Nouvelles campagnes, objectifs atteints et annonces des administrateurs</string>
+</resources>
