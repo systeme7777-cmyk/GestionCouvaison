@@ -11,3 +11,7 @@ captures/
 keystore.properties
 *.jks
 !release/ansaroudine-zikr-release.jks
+supabase/functions/.local-ca.crt
+supabase/functions/.env.local
+supabase/.temp/
+supabase/.branches/

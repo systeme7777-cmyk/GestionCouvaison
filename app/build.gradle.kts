@@ -29,8 +29,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        buildConfigField("String", "SUPABASE_URL", "\"${supabaseProps.getProperty("SUPABASE_URL", "")}\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseProps.getProperty("SUPABASE_ANON_KEY", "")}\"")
+        // Les propriétés Gradle -PsupabaseUrl / -PsupabaseAnonKey permettent de viser un serveur de test
+        val sbUrl = (project.findProperty("supabaseUrl") as String?) ?: supabaseProps.getProperty("SUPABASE_URL", "")
+        val sbKey = (project.findProperty("supabaseAnonKey") as String?) ?: supabaseProps.getProperty("SUPABASE_ANON_KEY", "")
+        buildConfigField("String", "SUPABASE_URL", "\"$sbUrl\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$sbKey\"")
         resourceConfigurations += listOf("fr")
     }
 
