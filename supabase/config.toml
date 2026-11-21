@@ -430,3 +430,6 @@ enabled = true
 
 [functions.zk-comptes]
 verify_jwt = false
+
+[functions.zk-push]
+verify_jwt = false

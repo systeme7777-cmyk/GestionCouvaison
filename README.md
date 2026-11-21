@@ -74,6 +74,23 @@ Téléchargez `release/ANSAROUDINE-ZIKR-1.0.0.apk` sur le téléphone et ouvrez-
 d'applications de cette source si Android le demande). Au premier lancement, appuyez sur
 « Configurer l'application » pour créer le compte de l'administrateur principal.
 
+## Version web (iPhone, ordinateur)
+
+Adresse : **https://ansaroudine-zikr.netlify.app**
+
+Mêmes comptes, mêmes campagnes et même temps réel que l'application Android. Sur iPhone : ouvrir le lien dans
+Safari, toucher **Partager → « Sur l'écran d'accueil »**, puis ouvrir l'application depuis l'icône (nécessaire pour
+recevoir les notifications sur l'écran verrouillé, iOS 16.4 ou plus récent).
+
+Code : dossier `web/` (React + TypeScript + Vite), publié sur Netlify. Notifications sur l'écran verrouillé :
+Web Push (fonction `supabase/functions/zk-push`, déclenchée par la base à chaque nouvelle notification ; les clés
+de chiffrement sont stockées dans la table protégée `zk_config`, jamais dans le dépôt).
+
+```bash
+cd web && npm install && npm run build      # version de production dans web/dist
+node tests/e2e-web.cjs                       # test de bout en bout (serveur Supabase local)
+```
+
 ## Serveur Supabase
 
 L'application est installée dans le projet Supabase « Gestion », à côté des autres applications :
