@@ -161,7 +161,7 @@ html.locked body>header, html.locked body>main{display:none}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .g3 div.mid{color:var(--gold)} }
 .frame3{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"t t t" "l g r" "b b b";gap:8px;align-items:center;justify-items:center;border:2px solid var(--gold);border-radius:16px;padding:10px 8px;margin:0 0 14px;background:var(--bg)}
 .frame3 .g3{grid-area:g;margin:0;width:100%}
-.frame3 .v{color:var(--brand2);font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif;font-weight:700;font-size:min(4.4vw,19px);line-height:1.5;text-align:center;direction:rtl}
+.frame3 .v{color:var(--brand2);font-family:"Amiri Quran","Amiri","Noto Naskh Arabic","Traditional Arabic",serif;font-weight:600;font-size:min(4.3vw,19px);line-height:1.9;text-align:center;direction:rtl}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .frame3 .v{color:var(--gold)} }
 .frame3 .vt{grid-area:t}.frame3 .vb{grid-area:b}
 .frame3 .vl{grid-area:l;writing-mode:vertical-rl;transform:rotate(180deg)}
@@ -618,8 +618,8 @@ function valeurNom(t){
   for(const ch of t){ if(tb[ch]!==undefined){v+=tb[ch];n++;} }
   return n?v:NaN;
 }
-/* Verset entourant le carré (Yā-Sīn 36:81-82) : haut, gauche, bas, droite */
-const VERSET=["أوليس الذي خلق السماوات والأرض بقادر","على أن يخلق مثلهم بلى","وهو الخلاق العليم إنما أمره إذا أراد شيئا","أن يقول له كن فيكون"];
+/* Versets entourant le carré : Yā-Sīn 36:81-82, texte Uthmani (Hafs) exact — haut, gauche, bas, droite */
+const VERSET=["أَوَلَيْسَ ٱلَّذِى خَلَقَ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضَ بِقَٰدِرٍ", "عَلَىٰٓ أَن يَخْلُقَ مِثْلَهُم ۚ بَلَىٰ", "وَهُوَ ٱلْخَلَّٰقُ ٱلْعَلِيمُ ﴿٨١﴾ إِنَّمَآ أَمْرُهُۥٓ إِذَآ أَرَادَ شَيْـًٔا", "أَن يَقُولَ لَهُۥ كُن فَيَكُونُ ﴿٨٢﴾"];
 function calcK3(D,s){
   if(!Number.isInteger(D)||D<9) throw "Entrez le Damir (nombre entier).";
   if(!Number.isInteger(s)||s<1) throw "Entrez le Nom (nombre ou nom en arabe).";
