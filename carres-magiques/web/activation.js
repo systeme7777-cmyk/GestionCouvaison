@@ -1,4 +1,4 @@
-/* Activation : chaque code s'utilise une seule fois sur un appareil.
+/* Activation : chaque code s'utilise une seule fois (vérifié en ligne sur Firebase).
    Seules les empreintes SHA-256 des codes sont stockées ici. */
 (function(){
 const PEPPER="GIGABYTES-ANSAR|v1|";
@@ -37,14 +37,45 @@ inp.addEventListener("input",()=>{
   let v=inp.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,12);
   inp.value=v.replace(/(.{4})(?=.)/g,"$1-"); err.textContent="";
 });
-function tryCode(){
+/* Vérification en ligne (Firebase Firestore) : le code est inscrit comme utilisé.
+   Une seconde inscription du même code est refusée par Firebase (code déjà utilisé). */
+const FS="https://firestore.googleapis.com/v1/projects/gestion-couvaison/databases/(default)/documents/usedCodes";
+const API_KEY="AIzaSyDTDioB3qnk7RQZuQuFyMt613nEQhMVnek";
+function deviceId(){
+  let d=get("cm-device");
+  if(!d){ d=Array.from({length:16},()=>"0123456789abcdef"[Math.floor(Math.random()*16)]).join(""); set("cm-device",d); }
+  return d;
+}
+async function inscrire(raw){
+  const id=sha256("GIGABYTES-ANSAR|used|v1|"+raw);
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),15000);
+  try{
+    const r=await fetch(`${FS}?documentId=${id}&key=${API_KEY}`,{
+      method:"POST", headers:{"Content-Type":"application/json"}, signal:ctrl.signal,
+      body:JSON.stringify({fields:{usedAt:{timestampValue:new Date().toISOString()},device:{stringValue:deviceId()},app:{stringValue:"carres-magiques"}}})
+    });
+    if(r.ok) return "ok";
+    if(r.status===409) return "deja";
+    return "refuse";
+  }catch(_){ return "reseau"; }
+  finally{ clearTimeout(t); }
+}
+let busy=false;
+async function tryCode(){
+  if(busy) return;
   const raw=inp.value.toUpperCase().replace(/[^A-Z0-9]/g,"");
   if(raw.length!==12){ err.textContent="Le code contient 12 caractères."; return; }
   const h=sha256(PEPPER+raw);
   let used=[]; try{used=JSON.parse(get(USED)||"[]");}catch(_){}
   if(used.includes(h)){ err.textContent="Ce code a déjà été utilisé."; return; }
   if(!CODES.has(h)){ err.textContent="Code invalide."; inp.classList.add("shake"); setTimeout(()=>inp.classList.remove("shake"),400); return; }
-  used.push(h); set(USED,JSON.stringify(used)); set(KEY,h); unlock();
+  busy=true; btn.disabled=true; btn.textContent="Vérification…"; err.textContent="";
+  const res=await inscrire(raw);
+  busy=false; btn.disabled=false; btn.textContent="Activer";
+  if(res==="ok"){ used.push(h); set(USED,JSON.stringify(used)); set(KEY,h); unlock(); return; }
+  if(res==="deja"){ used.push(h); set(USED,JSON.stringify(used)); err.textContent="Ce code a déjà été utilisé."; return; }
+  if(res==="reseau"){ err.textContent="Connexion internet nécessaire pour activer."; return; }
+  err.textContent="Activation refusée. Réessayez plus tard.";
 }
 btn.addEventListener("click",tryCode);
 inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); tryCode(); } });
