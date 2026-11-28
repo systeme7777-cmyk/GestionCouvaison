@@ -171,6 +171,8 @@ html.locked body>header, html.locked body>main{display:none}
 .tjrow input{font-size:18px;padding:10px 12px}
 .tjrow .tjv{text-align:right;font-size:17px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
 .tgrid .cell .value.base{color:var(--accent)}
+.tjgrp{margin:14px 0 8px;font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold)}
+.tjgrp:first-of-type{margin-top:0}
 </style>
 </head>
 <body>
@@ -265,15 +267,19 @@ html.locked body>header, html.locked body>main{display:none}
 <section id="tj" hidden>
   <div class="card">
     <div class="seg"><button type="button" id="tj-occ" class="on">Occidentale</button><button type="button" id="tj-ori">Orientale</button></div>
+    <div class="tjgrp">Verset 1</div>
     <div class="inputs">
-      <label class="tjrow"><span class="tjl ar">خ</span><input type="text" dir="rtl" id="tj-b0" value="ما عندكم"><span class="tjv" id="tj-v0"></span></label>
+      <label class="tjrow"><span class="tjl ar">ب</span><input type="text" dir="rtl" id="tj-b0" value="ما عندكم"><span class="tjv" id="tj-v0"></span></label>
       <label class="tjrow"><span class="tjl ar">د</span><input type="text" dir="rtl" id="tj-b1" value="ينفد"><span class="tjv" id="tj-v1"></span></label>
       <label class="tjrow"><span class="tjl ar">و</span><input type="text" dir="rtl" id="tj-b2" value="وما عند الله"><span class="tjv" id="tj-v2"></span></label>
       <label class="tjrow"><span class="tjl ar">ي</span><input type="text" dir="rtl" id="tj-b3" value="باق"><span class="tjv" id="tj-v3"></span></label>
+    </div>
+    <div class="tjgrp">Verset 2</div>
+    <div class="inputs">
       <label class="tjrow"><span class="tjl ar">ع</span><input type="text" dir="rtl" id="tj-b4" value="إن هذا"><span class="tjv" id="tj-v4"></span></label>
       <label class="tjrow"><span class="tjl ar">ر</span><input type="text" dir="rtl" id="tj-b5" value="لرزقنا"><span class="tjv" id="tj-v5"></span></label>
       <label class="tjrow"><span class="tjl ar">ت</span><input type="text" dir="rtl" id="tj-b6" value="ماله"><span class="tjv" id="tj-v6"></span></label>
-      <label class="tjrow"><span class="tjl ar">ب</span><input type="text" dir="rtl" id="tj-b7" value="من نفاد"><span class="tjv" id="tj-v7"></span></label>
+      <label class="tjrow"><span class="tjl ar">خ</span><input type="text" dir="rtl" id="tj-b7" value="من نفاد"><span class="tjv" id="tj-v7"></span></label>
     </div>
     <div class="inputs four" style="margin-top:12px">
       <label>Total visé<input type="number" inputmode="numeric" id="tj-cible" value="2156" placeholder="facultatif"></label>
@@ -686,11 +692,12 @@ document.getElementById("k3-ori").addEventListener("click",()=>{k3sys="ori";docu
 runK3();
 
 /* ---------- TIDJANI (5×5 lettres) ----------
-   8 cases de base (خ د و ي ع ر ت ب) = valeurs abjad des morceaux de versets ;
+   8 cases de base = valeurs abjad des 4 morceaux de chaque verset ;
    les 16 autres cases = sommes de deux cases de base ; centre (م) vide.
    Chaque ligne, colonne et diagonale = somme des 8 bases. Avec un « total visé »,
    l'écart est ajouté à la case ع (comme 757 → 758 dans le cahier). */
-const TJ_BASE=["خ","د","و","ي","ع","ر","ت","ب"];
+/* Ordre de remplissage : verset 1 → ب د و ي ; verset 2 → ع ر ت خ */
+const TJ_BASE=["ب","د","و","ي","ع","ر","ت","خ"];
 const TJ_SUM={"ا":["ر","خ"],"ه":["ع","ت"],"ج":["و","ي"],"ز":["د","ع"],"ح":["ت","خ"],"ط":["ب","ر"],"ك":["ب","ت"],"ل":["ي","ر"],
   "ن":["و","ع"],"ص":["د","خ"],"ف":["و","خ"],"ض":["ب","د"],"ق":["ي","ت"],"س":["د","ي"],"ث":["ع","ر"],"ذ":["ب","و"]};
 const TJ_GRID=[["ا","ب","ج","د","ه"],["و","ز","ح","ط","ي"],["ك","ل","م","ن","ص"],["ع","ف","ض","ق","ر"],["س","ت","ث","خ","ذ"]];
