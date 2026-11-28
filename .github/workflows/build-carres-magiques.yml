@@ -1,0 +1,37 @@
+name: Build APK Carrés Magiques
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "carres-magiques/**"
+      - ".github/workflows/build-carres-magiques.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: carres-magiques/android
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
+
+      - name: Build Debug APK
+        run: gradle assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: carres-magiques-apk
+          path: carres-magiques/android/app/build/outputs/apk/debug/*.apk

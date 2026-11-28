@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carrés Magiques</title>
+<meta name="description" content="Calcul de trois carrés magiques à partir d'un nombre.">
+<meta name="theme-color" content="#1f4e3d">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f6f3ea; --card:#ffffff; --ink:#1d2420; --muted:#66706a; --line:#d8d2c2;
+  --brand:#1f4e3d; --brand-ink:#ffffff; --accent:#b8322a; --ok:#1f7a45; --bad:#b8322a;
+  --cell:#fffdf6; --cell-empty:#ece7d8; --allah:#b8322a;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121614; --card:#1b211e; --ink:#e9ede9; --muted:#9aa49e; --line:#334039;
+    --brand:#2f7a5e; --brand-ink:#ffffff; --accent:#ff7b6e; --ok:#5fd393; --bad:#ff7b6e;
+    --cell:#202825; --cell-empty:#161b19; --allah:#ff8f84;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121614; --card:#1b211e; --ink:#e9ede9; --muted:#9aa49e; --line:#334039;
+  --brand:#2f7a5e; --brand-ink:#ffffff; --accent:#ff7b6e; --ok:#5fd393; --bad:#ff7b6e;
+  --cell:#202825; --cell-empty:#161b19; --allah:#ff8f84;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+header{background:var(--brand);color:var(--brand-ink);padding:calc(14px + env(safe-area-inset-top)) 16px 0;position:sticky;top:0;z-index:5}
+header h1{margin:0 0 10px;font-size:20px;letter-spacing:.2px}
+nav{display:flex;gap:4px;overflow-x:auto}
+nav button{flex:1;min-width:0;border:0;background:transparent;color:inherit;opacity:.75;padding:10px 6px 12px;font:inherit;font-size:15px;font-weight:600;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{opacity:1;border-bottom-color:#f5e6b8}
+main{max-width:640px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom))}
+section[hidden]{display:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.card h2{margin:0 0 4px;font-size:17px}
+.hint{color:var(--muted);font-size:13.5px;margin:0 0 12px;line-height:1.45}
+.inputs{display:grid;gap:10px}
+.inputs.four{grid-template-columns:1fr 1fr}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+input{font:inherit;font-size:20px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--cell);color:var(--ink);width:100%}
+input:focus{outline:2px solid var(--brand);outline-offset:1px}
+.btn{margin-top:12px;width:100%;border:0;border-radius:10px;background:var(--brand);color:var(--brand-ink);font:inherit;font-size:16px;font-weight:700;padding:13px;cursor:pointer}
+.err{color:var(--bad);font-size:14px;margin-top:8px;min-height:1em}
+.steps{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0}
+.grid{display:grid;gap:3px;background:var(--ink);border:3px solid var(--ink);border-radius:6px;overflow:hidden;margin:4px 0 10px}
+.grid div{background:var(--cell);display:flex;align-items:center;justify-content:center;flex-direction:column;aspect-ratio:1/1;font-weight:700;font-variant-numeric:tabular-nums;padding:2px;text-align:center;line-height:1.1;overflow:hidden}
+.grid div small{font-size:9.5px;font-weight:600;color:var(--accent);margin-top:2px}
+.grid div.empty{background:var(--cell-empty)}
+.grid div.allah{color:var(--allah);font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif;font-size:min(5vw,24px)}
+.verdict{font-weight:700;font-size:14.5px}
+.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:6px 0 2px;font-weight:500;flex-direction:row}
+.toggle input{width:auto;transform:scale(1.25)}
+.actions{display:flex;gap:8px;margin-top:4px}
+.actions .btn{margin-top:0;background:transparent;color:var(--brand);border:1.5px solid var(--brand);padding:10px;font-size:14.5px}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .actions .btn{color:#8fd6b6;border-color:#8fd6b6} }
+footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Carrés Magiques</h1>
+  <nav role="tablist">
+    <button role="tab" data-tab="c1" aria-selected="true">Carré 1 (÷65)</button>
+    <button role="tab" data-tab="c2" aria-selected="false">Carré 2 (الله)</button>
+    <button role="tab" data-tab="c3" aria-selected="false">Carré 3 (4 nb)</button>
+  </nav>
+</header>
+
+<main>
+<!-- ============ CARRÉ 1 ============ -->
+<section id="c1">
+  <div class="card">
+    <h2>Carré 5×5 — nombre ÷ 65</h2>
+    <p class="hint">Le nombre est divisé par 65 (quotient Q, reste R). Chaque ligne, colonne et diagonale donne le nombre de départ. La case centrale reste vide.</p>
+    <form class="inputs" data-form="c1">
+      <label>Nombre<input type="number" inputmode="numeric" name="n" value="16807" min="65" required></label>
+    </form>
+    <button class="btn" data-go="c1">Calculer</button>
+    <div class="err" data-err="c1"></div>
+  </div>
+  <div class="card" data-out="c1"></div>
+</section>
+
+<!-- ============ CARRÉ 2 ============ -->
+<section id="c2" hidden>
+  <div class="card">
+    <h2>Carré 6×6 — الله</h2>
+    <p class="hint">On retire 46 du nombre, puis on divise par 4 (Q = première case, R = reste). 24 nombres sont placés selon le modèle ; les 12 cases « الله » restent fixes. Chaque ligne, colonne et diagonale (4 nombres) donne le nombre de départ.</p>
+    <form class="inputs" data-form="c2">
+      <label>Nombre<input type="number" inputmode="numeric" name="n" value="1382" min="100" required></label>
+    </form>
+    <label class="toggle"><input type="checkbox" data-order="c2"> Afficher le numéro d'ordre des cases</label>
+    <button class="btn" data-go="c2">Calculer</button>
+    <div class="err" data-err="c2"></div>
+  </div>
+  <div class="card" data-out="c2"></div>
+</section>
+
+<!-- ============ CARRÉ 3 ============ -->
+<section id="c3" hidden>
+  <div class="card">
+    <h2>Carré 5×5 — quatre nombres</h2>
+    <p class="hint">Chaque nombre est divisé par 4 : la partie P = quotient, la partie S = P×3 + reste (donc P + S = le nombre). Les 4 nombres vont dans les coins, les autres cases sont des sommes de parties. Le total magique = somme des 4 nombres.</p>
+    <form class="inputs four" data-form="c3">
+      <label>① en bas à gauche<input type="number" inputmode="numeric" name="a1" value="1987" min="4" required></label>
+      <label>② en bas à droite<input type="number" inputmode="numeric" name="a2" value="3855" min="4" required></label>
+      <label>③ en haut à gauche<input type="number" inputmode="numeric" name="a3" value="6553" min="4" required></label>
+      <label>④ en haut à droite<input type="number" inputmode="numeric" name="a4" value="4246" min="4" required></label>
+    </form>
+    <label class="toggle"><input type="checkbox" data-order="c3"> Afficher la formule de chaque case</label>
+    <button class="btn" data-go="c3">Calculer</button>
+    <div class="err" data-err="c3"></div>
+  </div>
+  <div class="card" data-out="c3"></div>
+</section>
+
+<footer>Fonctionne hors ligne une fois installée.</footer>
+</main>
+
+<script>
+"use strict";
+const ALLAH = "الله";
+
+/* ---------- utilitaires ---------- */
+function lineSums(g){
+  const n=g.length, v=x=>(typeof x==="number"?x:0), out=[];
+  for(let i=0;i<n;i++) out.push({name:"Ligne "+(i+1), s:g[i].reduce((a,x)=>a+v(x),0)});
+  for(let j=0;j<n;j++){let s=0;for(let i=0;i<n;i++)s+=v(g[i][j]);out.push({name:"Colonne "+(j+1),s});}
+  let d1=0,d2=0;for(let i=0;i<n;i++){d1+=v(g[i][i]);d2+=v(g[i][n-1-i]);}
+  out.push({name:"Diagonale \\",s:d1},{name:"Diagonale /",s:d2});
+  return out;
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function renderGrid(g, labels){
+  const n=g.length;
+  let h=`<div class="grid" style="grid-template-columns:repeat(${n},1fr);font-size:${n===6?"min(3.6vw,17px)":"min(4.2vw,20px)"}">`;
+  g.forEach((row,i)=>row.forEach((x,j)=>{
+    const lab = labels && labels[i][j] ? `<small>${esc(labels[i][j])}</small>` : "";
+    if(x===null) h+=`<div class="empty">${lab}</div>`;
+    else if(x===ALLAH) h+=`<div class="allah" lang="ar">${ALLAH}</div>`;
+    else h+=`<div>${x}${lab}</div>`;
+  }));
+  return h+"</div>";
+}
+function renderVerdict(g,target){
+  const sums=lineSums(g), bad=sums.filter(x=>x.s!==target);
+  const nums=g.flat().filter(x=>typeof x==="number");
+  const dup=nums.length-new Set(nums).size;
+  let h = bad.length===0
+    ? `<p class="verdict ok">✓ Vérifié : les ${sums.length} lignes, colonnes et diagonales font ${target}.</p>`
+    : `<p class="verdict bad">✗ ${bad.length} somme(s) différente(s) : ${bad.map(b=>b.name+" = "+b.s).join(", ")}</p>`;
+  if(dup>0) h+=`<p class="hint">Attention : ${dup} nombre(s) répété(s) dans le carré (nombre de départ trop petit).</p>`;
+  return h;
+}
+function shareText(title,g,target){
+  const rows=g.map(r=>r.map(x=>x===null?"·":x).join("  ")).join("\n");
+  return `${title}\nSomme = ${target}\n\n${rows}`;
+}
+function actions(id){
+  return `<div class="actions"><button class="btn" data-copy="${id}">Copier</button><button class="btn" data-share="${id}">Partager</button></div>`;
+}
+const lastText={};
+
+/* ---------- CARRÉ 1 : N ÷ 65 ----------
+   Chaque case = k·Q + r·R + c  (modèle relevé dans le cahier, valable pour tout N) */
+const T1=[
+  [[16,0,0],[10,1,0],[1,0,0],[12,0,0],[26,0,0]],
+  [[7,0,-1],[21,0,0],[19,1,0],[14,0,0],[4,0,1]],
+  [[17,0,0],[11,0,1],null,[12,0,-1],[25,1,0]],
+  [[5,0,0],[5,0,-1],[23,0,0],[25,1,1],[7,0,0]],
+  [[20,1,1],[18,0,0],[22,0,0],[2,0,0],[3,0,-1]],
+];
+function fmt1(t){
+  if(!t) return "";
+  let s=(t[0]===1?"":t[0])+"Q";
+  if(t[1]) s+="+R";
+  if(t[2]>0) s+="+"+t[2]; else if(t[2]<0) s+=t[2];
+  return s;
+}
+function calc1(N){
+  if(!Number.isInteger(N)||N<65) throw "Entrez un nombre entier ≥ 65.";
+  const Q=Math.floor(N/65), R=N%65;
+  const g=T1.map(r=>r.map(t=>t?t[0]*Q+t[1]*R+t[2]:null));
+  const labels=T1.map(r=>r.map(fmt1));
+  const steps=`${N} ÷ 65 = ${Q}\nR = ${R}`;
+  return {g,labels,steps,target:N,title:`Carré 1 — ${N}`};
+}
+
+/* ---------- CARRÉ 2 : 6×6 الله ----------
+   Modèle (numéros d'ordre) relevé dans le cahier ; A = case الله */
+const A=0;
+const T2=[
+  [A,10,16, 9,15, A],
+  [3,20, A, A,22, 5],
+  [2, A,12,13, A,23],
+  [21,A,14,11, A, 4],
+  [24,1, A, A, 7,18],
+  [A,19, 8,17, 6, A],
+];
+/* Pour un reste R ≠ 0 : les 6 cases d'ordre 14,15,17,20,23,24 forment une
+   « transversale » (exactement une case par ligne, colonne et diagonale).
+   On les augmente de R+4m et on baisse la première case de m :
+   chaque ligne gagne alors exactement R, et tous les nombres restent différents. */
+const G2=[14,15,17,20,23,24];
+function calc2(N){
+  if(!Number.isInteger(N)||N<46+4*1) throw "Entrez un nombre entier plus grand (au moins 50).";
+  const D=N-46, Q=Math.floor(D/4), R=D%4;
+  let m=0, base=Q, bump=0;
+  const valOf=(o)=>base+o-1+(R&&G2.includes(o)?bump:0);
+  if(R){
+    for(m=0;m<=6;m++){
+      base=Q-m; bump=R+4*m;
+      const vals=[];for(let o=1;o<=24;o++)vals.push(valOf(o));
+      if(new Set(vals).size===24) break;
+    }
+  }
+  const g=T2.map(r=>r.map(o=>o===A?ALLAH:valOf(o)));
+  const labels=T2.map(r=>r.map(o=>o===A?"":"n°"+o));
+  let steps=`${N} − 46 = ${D}\n${D} ÷ 4 = ${Q}\nR = ${R}`;
+  if(R===0) steps+=`\n\nCase n°1 = ${Q}, puis +1 à chaque case jusqu'à n°24.`;
+  else steps+=`\n\nCase n°1 = ${base}${m?` (${Q} − ${m})`:""}, puis +1 à chaque case.\nReste ${R} : on ajoute ${bump} aux cases n° ${G2.join(", ")}\n(une case par ligne, colonne et diagonale).`;
+  return {g,labels,steps,target:N,title:`Carré 2 — ${N}`};
+}
+
+/* ---------- CARRÉ 3 : quatre nombres ---------- */
+function calc3(a){
+  if(a.some(x=>!Number.isInteger(x)||x<4)) throw "Entrez 4 nombres entiers (≥ 4).";
+  const p=a.map(x=>Math.floor(x/4)), r=a.map(x=>x%4), s=p.map((x,i)=>3*x+r[i]);
+  const P=i=>p[i-1], S=i=>s[i-1], N=i=>a[i-1];
+  const cells=[
+    [[N(3),"③"],[S(2),"S2"],[P(1)+P(2),"P1+P2"],[S(1),"S1"],[N(4),"④"]],
+    [[P(2),"P2"],[S(1)+S(4),"S1+S4"],[P(3)+P(4),"P3+P4"],[S(2)+S(3),"S2+S3"],[P(1),"P1"]],
+    [[S(2)+P(4),"S2+P4"],[P(1)+S(3),"P1+S3"],null,[P(2)+S(4),"P2+S4"],[S(1)+P(3),"S1+P3"]],
+    [[S(4),"S4"],[P(2)+P(3),"P2+P3"],[S(1)+S(2),"S1+S2"],[P(1)+P(4),"P1+P4"],[S(3),"S3"]],
+    [[N(1),"①"],[P(4),"P4"],[S(3)+S(4),"S3+S4"],[P(3),"P3"],[N(2),"②"]],
+  ];
+  const g=cells.map(r=>r.map(c=>c?c[0]:null));
+  const labels=cells.map(r=>r.map(c=>c?c[1]:""));
+  const total=a.reduce((x,y)=>x+y,0);
+  const circ=["①","②","③","④"];
+  const steps=a.map((x,i)=>`${circ[i]} ${x} ÷ 4 = ${p[i]}  → P${i+1} = ${p[i]}\n   ${p[i]}×3 + R(${r[i]}) = ${s[i]}  → S${i+1} = ${s[i]}`).join("\n")
+    +`\n\nSomme magique = ${a.join(" + ")} = ${total}`;
+  return {g,labels,steps,target:total,title:`Carré 3 — ${a.join(", ")}`};
+}
+
+/* ---------- interface ---------- */
+const calcs={
+  c1:f=>calc1(+f.n.value),
+  c2:f=>calc2(+f.n.value),
+  c3:f=>calc3([+f.a1.value,+f.a2.value,+f.a3.value,+f.a4.value]),
+};
+function run(id){
+  const form=document.querySelector(`[data-form="${id}"]`);
+  const out=document.querySelector(`[data-out="${id}"]`);
+  const err=document.querySelector(`[data-err="${id}"]`);
+  const showLab = id==="c1" ? true : !!document.querySelector(`[data-order="${id}"]`)?.checked;
+  err.textContent="";
+  try{
+    const r=calcs[id](form);
+    lastText[id]=shareText(r.title,r.g.map(row=>row.map(x=>x===ALLAH?ALLAH:x)),r.target);
+    out.innerHTML=`<pre class="steps">${esc(r.steps)}</pre>`+renderGrid(r.g, showLab?r.labels:null)+renderVerdict(r.g,r.target)+actions(id);
+    out.hidden=false;
+    save();
+  }catch(e){ err.textContent=typeof e==="string"?e:"Erreur de calcul."; out.hidden=true; }
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>run(b.dataset.go)));
+document.querySelectorAll("[data-form]").forEach(f=>{
+  f.addEventListener("submit",e=>{e.preventDefault();run(f.dataset.form);});
+  f.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();run(f.dataset.form);}});
+});
+document.querySelectorAll("[data-order]").forEach(c=>c.addEventListener("change",()=>run(c.dataset.order)));
+document.addEventListener("click",async e=>{
+  const c=e.target.closest("[data-copy]"), s=e.target.closest("[data-share]");
+  if(c){ try{await navigator.clipboard.writeText(lastText[c.dataset.copy]); c.textContent="Copié ✓"; setTimeout(()=>c.textContent="Copier",1500);}catch(_){ c.textContent="Impossible"; } }
+  if(s){ const t=lastText[s.dataset.share];
+    if(navigator.share){ try{await navigator.share({text:t});}catch(_){} }
+    else { try{await navigator.clipboard.writeText(t); s.textContent="Copié ✓"; setTimeout(()=>s.textContent="Partager",1500);}catch(_){} } }
+});
+
+/* onglets */
+function showTab(id){
+  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===id));
+  document.querySelectorAll("main section").forEach(s=>s.hidden=s.id!==id);
+  try{localStorage.setItem("cm-tab",id);}catch(_){}
+}
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+
+/* mémoriser les derniers nombres saisis */
+function save(){
+  try{
+    const d={};document.querySelectorAll("[data-form] input").forEach(i=>d[i.closest("[data-form]").dataset.form+"."+i.name]=i.value);
+    localStorage.setItem("cm-inputs",JSON.stringify(d));
+  }catch(_){}
+}
+try{
+  const d=JSON.parse(localStorage.getItem("cm-inputs")||"{}");
+  document.querySelectorAll("[data-form] input").forEach(i=>{const k=i.closest("[data-form]").dataset.form+"."+i.name;if(d[k])i.value=d[k];});
+  const t=localStorage.getItem("cm-tab"); if(t&&document.getElementById(t)) showTab(t);
+}catch(_){}
+["c1","c2","c3"].forEach(run);
+
+/* hors ligne (PWA) */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
