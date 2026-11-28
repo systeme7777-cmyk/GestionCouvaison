@@ -91,7 +91,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
 <section id="c2" hidden>
   <div class="card">
     <h2>Carré 6×6 — الله</h2>
-    <p class="hint">On retire 46 du nombre, puis on divise par 4 (Q = première case, R = reste). 24 nombres sont placés selon le modèle ; les 12 cases « الله » restent fixes. Chaque ligne et chaque colonne (4 nombres) donne le nombre de départ.</p>
+    <p class="hint">On retire 46 du nombre, puis on divise par 4 (Q = première case, R = reste). 24 nombres sont placés selon le modèle ; les 12 cases « الله » restent fixes. Chaque ligne, colonne et diagonale (4 nombres) donne le nombre de départ.</p>
     <form class="inputs" data-form="c2">
       <label>Nombre<input type="number" inputmode="numeric" name="n" value="1382" min="100" required></label>
     </form>
@@ -208,9 +208,10 @@ const T2=[
 ];
 /* Méthode du cahier (relevée sur les exemples 787 et 1680) :
    R = 0 : modèle tel quel (avec l'échange 18/23, les lignes 3 et 5 seraient fausses) ;
-   R = 1, 2, 3 : on ajoute R aux cases n° 5, 13, 14, 15, 19, 24
-   (notées « −R case 16, case 20 » dans le cahier). */
-const C2=[5,13,14,15,19,24];
+   R = 1, 2, 3 : on ajoute R aux cases n° 14, 15, 17, 20, 23, 24 :
+   une case par ligne, par colonne et sur chaque diagonale, donc les 14 sommes
+   gagnent exactement R. Les cases 18 et 23 ne changent jamais de place. */
+const C2=[14,15,17,20,23,24];
 function calc2cahier(N){
   if(!Number.isInteger(N)||N<50) throw "Entrez un nombre entier plus grand (au moins 50).";
   const D=N-46, Q=Math.floor(D/4), R=D%4;
@@ -279,7 +280,7 @@ function run(id){
   try{
     const r=calcs[id](form);
     lastText[id]=shareText(r.title,r.g.map(row=>row.map(x=>x===ALLAH?ALLAH:x)),r.target);
-    out.innerHTML=`<pre class="steps">${esc(r.steps)}</pre>`+renderGrid(r.g, showLab?r.labels:null)+renderVerdict(r.g,r.target,id==="c2"?{sansDiagonales:true,sansDoublons:true}:{})+actions(id);
+    out.innerHTML=`<pre class="steps">${esc(r.steps)}</pre>`+renderGrid(r.g, showLab?r.labels:null)+renderVerdict(r.g,r.target,id==="c2"?{sansDoublons:true}:{})+actions(id);
     out.hidden=false;
     save();
   }catch(e){ err.textContent=typeof e==="string"?e:"Erreur de calcul."; out.hidden=true; }
