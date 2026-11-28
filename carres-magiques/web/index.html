@@ -91,12 +91,10 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
 <section id="c2" hidden>
   <div class="card">
     <h2>Carré 6×6 — الله</h2>
-    <p class="hint">On retire 46 du nombre, puis on divise par 4 (Q = première case, R = reste). 24 nombres sont placés selon le modèle ; les 12 cases « الله » restent fixes. Chaque ligne, colonne et diagonale (4 nombres) donne le nombre de départ.</p>
+    <p class="hint">On retire 46 du nombre, puis on divise par 4 (Q = première case, R = reste). 24 nombres sont placés selon le modèle ; les 12 cases « الله » restent fixes. Chaque ligne et chaque colonne (4 nombres) donne le nombre de départ.</p>
     <form class="inputs" data-form="c2">
       <label>Nombre<input type="number" inputmode="numeric" name="n" value="1382" min="100" required></label>
     </form>
-    <label class="toggle"><input type="radio" name="m2" value="cahier" data-order="c2" checked> Méthode du cahier</label>
-    <label class="toggle"><input type="radio" name="m2" value="corrigee" data-order="c2"> Méthode corrigée (diagonales justes)</label>
     <label class="toggle"><input type="checkbox" data-order="c2" data-lab="c2"> Afficher le numéro d'ordre des cases</label>
     <button class="btn" data-go="c2">Calculer</button>
     <div class="err" data-err="c2"></div>
@@ -150,14 +148,17 @@ function renderGrid(g, labels){
   }));
   return h+"</div>";
 }
-function renderVerdict(g,target){
-  const sums=lineSums(g), bad=sums.filter(x=>x.s!==target);
+function renderVerdict(g,target,opt){
+  opt=opt||{};
+  let sums=lineSums(g);
+  if(opt.sansDiagonales) sums=sums.filter(x=>!x.name.startsWith("Diagonale"));
+  const bad=sums.filter(x=>x.s!==target);
   const nums=g.flat().filter(x=>typeof x==="number");
   const dup=nums.length-new Set(nums).size;
   let h = bad.length===0
-    ? `<p class="verdict ok">✓ Vérifié : les ${sums.length} lignes, colonnes et diagonales font ${target}.</p>`
+    ? `<p class="verdict ok">✓ Vérifié : les ${sums.length} ${opt.sansDiagonales?"lignes et colonnes":"lignes, colonnes et diagonales"} font ${target}.</p>`
     : `<p class="verdict bad">✗ ${bad.length} somme(s) différente(s) : ${bad.map(b=>b.name+" = "+b.s).join(", ")}</p>`;
-  if(dup>0) h+=`<p class="hint">Attention : ${dup} nombre(s) répété(s) dans le carré.</p>`;
+  if(dup>0 && !opt.sansDoublons) h+=`<p class="hint">Attention : ${dup} nombre(s) répété(s) dans le carré.</p>`;
   return h;
 }
 function shareText(title,g,target){
@@ -206,20 +207,19 @@ const T2=[
   [A,19, 8,17, 6, A],
 ];
 /* Méthode du cahier (relevée sur les exemples 787 et 1680) :
-   R = 0 : les cases n°18 et n°23 changent de place ;
+   R = 0 : modèle tel quel (avec l'échange 18/23, les lignes 3 et 5 seraient fausses) ;
    R = 1, 2, 3 : on ajoute R aux cases n° 5, 13, 14, 15, 19, 24
    (notées « −R case 16, case 20 » dans le cahier). */
 const C2=[5,13,14,15,19,24];
 function calc2cahier(N){
   if(!Number.isInteger(N)||N<50) throw "Entrez un nombre entier plus grand (au moins 50).";
   const D=N-46, Q=Math.floor(D/4), R=D%4;
-  const T=T2.map(r=>r.map(o=> R===0 && o===18 ? 23 : R===0 && o===23 ? 18 : o));
+  const T=T2;
   const valOf=o=>Q+o-1+(R&&C2.includes(o)?R:0);
   const g=T.map(r=>r.map(o=>o===A?ALLAH:valOf(o)));
   const labels=T.map(r=>r.map(o=>o===A?"":"n°"+o));
   let steps=`${N} − 46 = ${D}\n${D} ÷ 4 = ${Q}\nR = ${R}\n\nCase n°1 = ${Q}, puis +1 à chaque case jusqu'à n°24.`;
-  if(R===0) steps+=`\nR = 0 : les cases n°18 et n°23 changent de place.`;
-  else steps+=`\nReste ${R} : +${R} aux cases n° ${C2.join(", ")}.`;
+  if(R) steps+=`\nReste ${R} : +${R} aux cases n° ${C2.join(", ")}.`;
   return {g,labels,steps,target:N,title:`Carré 2 — ${N}`};
 }
 function calc2(N, mode){
@@ -266,7 +266,7 @@ function calc3(a){
 /* ---------- interface ---------- */
 const calcs={
   c1:f=>calc1(+f.n.value),
-  c2:f=>calc2(+f.n.value,(document.querySelector('input[name="m2"]:checked')||{}).value||"cahier"),
+  c2:f=>calc2(+f.n.value,"cahier"),
   c3:f=>calc3([+f.a1.value,+f.a2.value,+f.a3.value,+f.a4.value]),
 };
 function run(id){
@@ -279,7 +279,7 @@ function run(id){
   try{
     const r=calcs[id](form);
     lastText[id]=shareText(r.title,r.g.map(row=>row.map(x=>x===ALLAH?ALLAH:x)),r.target);
-    out.innerHTML=`<pre class="steps">${esc(r.steps)}</pre>`+renderGrid(r.g, showLab?r.labels:null)+renderVerdict(r.g,r.target)+actions(id);
+    out.innerHTML=`<pre class="steps">${esc(r.steps)}</pre>`+renderGrid(r.g, showLab?r.labels:null)+renderVerdict(r.g,r.target,id==="c2"?{sansDiagonales:true,sansDoublons:true}:{})+actions(id);
     out.hidden=false;
     save();
   }catch(e){ err.textContent=typeof e==="string"?e:"Erreur de calcul."; out.hidden=true; }
