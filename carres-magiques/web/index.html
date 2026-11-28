@@ -31,7 +31,8 @@
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
 header{background:var(--brand);color:var(--brand-ink);padding:calc(14px + env(safe-area-inset-top)) 16px 0;position:sticky;top:0;z-index:5}
 header h1{margin:0 0 10px;font-size:20px;letter-spacing:.2px}
-nav{display:flex;gap:0;overflow-x:auto;margin:0 -8px}
+nav{display:flex;gap:0;overflow-x:auto;margin:0 -8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+nav::-webkit-scrollbar{display:none}
 nav button{flex:1 0 auto;min-width:0;border:0;background:transparent;color:inherit;opacity:.75;padding:10px 5px 12px;font:inherit;font-size:13px;font-weight:600;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
 nav button[aria-selected="true"]{opacity:1;border-bottom-color:#f5e6b8}
 main{max-width:640px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom))}
@@ -42,8 +43,8 @@ section[hidden]{display:none}
 .inputs{display:grid;gap:10px}
 .inputs.four{grid-template-columns:1fr 1fr}
 label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
-input{font:inherit;font-size:20px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--cell);color:var(--ink);width:100%}
-input:focus{outline:2px solid var(--brand);outline-offset:1px}
+
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:1px}
 .btn{margin-top:12px;width:100%;border:0;border-radius:10px;background:var(--brand);color:var(--brand-ink);font:inherit;font-size:16px;font-weight:700;padding:13px;cursor:pointer}
 .err{color:var(--bad);font-size:14px;margin-top:8px;min-height:1em}
 .steps{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0}
@@ -55,14 +56,47 @@ input:focus{outline:2px solid var(--brand);outline-offset:1px}
 .verdict{font-weight:700;font-size:14.5px}
 .verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
 .toggle{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:6px 0 2px;font-weight:500;flex-direction:row}
-.toggle input{width:auto;transform:scale(1.25)}
+.toggle input{width:auto;padding:0;transform:scale(1.25)}
 .actions{display:flex;gap:8px;margin-top:4px}
 .actions .btn{margin-top:0;background:transparent;color:var(--brand);border:1.5px solid var(--brand);padding:10px;font-size:14.5px}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .actions .btn{color:#8fd6b6;border-color:#8fd6b6} }
-.tech{display:flex;flex-direction:column;gap:2px;padding:14px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;text-decoration:none;color:var(--ink);background:var(--cell)}
-.tech:last-child{margin-bottom:0}
-.tech b{font-size:17px}
-.tech span{font-size:13px;color:var(--muted)}
+input,select,textarea{font:inherit;font-size:20px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--cell);color:var(--ink);width:100%}
+textarea{font-size:17px;resize:vertical}
+select{font-size:17px}
+input[dir=rtl],select[dir=rtl],textarea{font-size:18px}
+.card h3{margin:0 0 10px;font-size:16px;text-align:center;color:var(--brand)}
+.hint.center{text-align:center;margin:8px 0 0}
+.res{scroll-margin-top:110px}
+.seg{display:flex;gap:0;border:1.5px solid var(--brand);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.seg button{flex:1;border:0;background:transparent;color:var(--brand);font:inherit;font-weight:700;font-size:14px;padding:10px;cursor:pointer;text-transform:uppercase;letter-spacing:.4px}
+.seg button.on{background:var(--brand);color:var(--brand-ink)}
+.tgrid{display:grid;gap:3px;background:var(--ink);border:3px solid var(--ink);border-radius:6px;overflow:hidden;margin:4px 0}
+.tgrid.c5{grid-template-columns:repeat(5,1fr)}
+.tgrid.c4{grid-template-columns:repeat(4,1fr)}
+.tgrid .cell{background:var(--cell);aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;font-weight:700;font-variant-numeric:tabular-nums;font-size:min(4.6vw,22px);text-align:center;overflow:hidden;line-height:1.15}
+.tgrid.small .cell{font-size:min(4vw,18px)}
+.tgrid .cell .letter{color:var(--accent);font-size:min(5.4vw,24px);font-family:"Amiri","Noto Naskh Arabic",serif;line-height:1}
+.tgrid .cell .value{font-size:min(3.4vw,15px);margin-top:3px}
+.tgrid .cell.center,.tgrid .cell.blank{background:var(--cell-empty);color:var(--accent);font-size:min(3.2vw,13px);font-weight:600}
+.tgrid .cell.center .letter{font-size:min(4vw,18px)}
+.tgrid .cell.center .value{font-size:min(3vw,12px);word-break:break-word}
+.framed{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"t t t" "l g r" "b b b";gap:6px;align-items:center}
+.framed .tgrid{grid-area:g;margin:0}
+.side{color:var(--accent);font-weight:700;font-size:16px;text-align:center}
+.s-top{grid-area:t}.s-bottom{grid-area:b}
+.s-left{grid-area:l;writing-mode:vertical-rl}.s-right{grid-area:r;writing-mode:vertical-rl}
+.kv{font-size:15px;margin:6px 0;line-height:1.6}
+.kv b{color:var(--brand)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .kv b, :root:not([data-theme="light"]) .card h3{color:#8fd6b6} }
+.instr{line-height:1.8}
+.letters,.pairbox{direction:rtl;font-size:20px;letter-spacing:2px;background:var(--cell);border:1px solid var(--line);border-radius:10px;padding:10px;word-break:break-all;line-height:1.9}
+.pairbox span{display:inline-block;margin:0 4px;padding:2px 4px}
+.blocks{display:flex;gap:10px}
+.blocks>div{flex:1;background:var(--cell);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;direction:rtl;font-size:20px}
+.blocks .lbl{display:block;font-size:12px;color:var(--muted);direction:ltr;margin-bottom:4px}
+.invoc{font-size:18px;line-height:2.1;white-space:pre-wrap;text-align:right}
+.txt{font-size:15px;line-height:1.5;margin:0 0 8px}
+.schema{display:block;max-width:100%;margin:12px auto 0;border-radius:8px}
 footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
 </style>
 </head>
@@ -73,7 +107,10 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
     <button role="tab" data-tab="c1" aria-selected="true">5×5 Dayane (65)</button>
     <button role="tab" data-tab="c2" aria-selected="false" dir="ltr">6×6&nbsp;<bdi lang="ar">الله</bdi></button>
     <button role="tab" data-tab="c3" aria-selected="false">5×5 Askandari</button>
-    <button role="tab" data-tab="plus" aria-selected="false">Autres</button>
+    <button role="tab" data-tab="k5" aria-selected="false">Khatim 5×5</button>
+    <button role="tab" data-tab="cp" aria-selected="false">Compatibilité</button>
+    <button role="tab" data-tab="mr" aria-selected="false" dir="rtl"><bdi lang="ar">سر المربعات</bdi></button>
+    <button role="tab" data-tab="zd" aria-selected="false">Zodiaque</button>
   </nav>
 </header>
 
@@ -119,14 +156,105 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
   <div class="card" data-out="c3"></div>
 </section>
 
-<!-- ============ AUTRES TECHNIQUES ============ -->
-<section id="plus" hidden>
+<!-- ============ KHATIM 5×5 ============ -->
+<section id="k5" hidden>
   <div class="card">
-    <a class="tech" href="techniques/khatim-5x5.html"><b>Khatim 5×5</b><span>Méthode par croisement</span></a>
-    <a class="tech" href="techniques/khatim-compatibilite.html"><b>Khatim Compatibilité</b><span>Talib / matloub — 4 éléments</span></a>
-    <a class="tech" href="techniques/khatim-marabi3.html"><b lang="ar">سر المربعات</b><span>Les 16 maisons</span></a>
-    <a class="tech" href="techniques/khatim-mukhammas.html"><b lang="ar">سر الخمس تهمان</b><span>Carré 5×5 mukhammas</span></a>
-    <a class="tech" href="techniques/khatim-zodiaque.html"><b>Khatim Zodiaque</b><span>Talib / matloub — zodiaque</span></a>
+    <div class="inputs">
+      <label>Nombre à traiter<input type="number" inputmode="numeric" id="k5-nombre" placeholder="ex : 644"></label>
+      <label>Besoin (inscrit au centre)<textarea id="k5-besoin" rows="2" placeholder="ex : votre demande..."></textarea></label>
+    </div>
+    <div class="err" id="k5-errMsg" style="display:none">Veuillez entrer un nombre pair.</div>
+    <button class="btn" id="k5-go">Remplir le carré</button>
+  </div>
+  <div class="card res" id="k5-resultSection" style="display:none">
+    <div class="tgrid c5" id="k5-grid" dir="rtl"></div>
+    <p class="hint center" id="k5-sums"></p>
+  </div>
+</section>
+
+<!-- ============ COMPATIBILITÉ ============ -->
+<section id="cp" hidden>
+  <div class="card">
+    <div class="seg"><button type="button" id="cp-btnOcc" class="on">Occidentale</button><button type="button" id="cp-btnOri">Orientale</button></div>
+    <div class="inputs">
+      <label>Nom du talib (طالب)<input type="text" id="cp-talib" dir="rtl" placeholder="اكتب الاسم هنا"></label>
+      <label>— ou nombre du talib<input type="number" inputmode="numeric" id="cp-talibNum" placeholder="ex : 1507"></label>
+      <label>Nom du matloub (مطلوب)<input type="text" id="cp-matloub" dir="rtl" placeholder="اكتب الاسم هنا"></label>
+      <label>— ou nombre du matloub<input type="number" inputmode="numeric" id="cp-matloubNum" placeholder="ex : 1007"></label>
+    </div>
+    <div class="err" id="cp-errMsg" style="display:none">Veuillez entrer un nom ou un nombre pour le talib et le matloub.</div>
+    <button class="btn" id="cp-go">Calculer</button>
+  </div>
+  <div class="res" id="cp-resultSection" style="display:none">
+    <div class="card"><h3>Carré du talib</h3><div class="tgrid c4" id="cp-gridTalib"></div><p class="hint center" id="cp-detailTalib"></p></div>
+    <div class="card"><h3>Carré du matloub</h3><div class="tgrid c4" id="cp-gridMatloub"></div><p class="hint center" id="cp-detailMatloub"></p></div>
+    <div class="card"><h3>Carré final</h3>
+      <div class="framed">
+        <span class="side s-top" lang="ar">يا حكيم</span>
+        <span class="side s-left" lang="ar">يا ودود</span>
+        <div class="tgrid c4" id="cp-gridFinal"></div>
+        <span class="side s-right" lang="ar">يا ودود</span>
+        <span class="side s-bottom" lang="ar">يا حكيم</span>
+      </div>
+      <p class="hint center" id="cp-detailFinal"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SIRR AL-MARABI3 ============ -->
+<section id="mr" hidden>
+  <div class="card">
+    <div class="inputs">
+      <label>اختر حاجتك (choisissez votre besoin)<select id="mr-besoin" dir="rtl"><option value="">— اختر —</option></select></label>
+      <label>الاسم أو العدد الذي يُقسم على 30<input type="text" id="mr-nomCalcul" dir="rtl" placeholder="مثال : لطيف أو 1782"></label>
+      <label>الحاجة (تظهر في البيت الخالي)<input type="text" id="mr-voeu" dir="rtl" placeholder="مثال : اسمك أو حاجتك"></label>
+    </div>
+  </div>
+  <div class="card res" id="mr-resultSection" style="display:none" dir="rtl">
+    <h3 id="mr-titreBeit"></h3>
+    <div class="kv"><b>المربع المرجعي</b></div>
+    <div class="tgrid c4 small" id="mr-gridRef" dir="ltr"></div>
+    <div class="kv" id="mr-calcDetail"></div>
+    <div class="kv"><b>المربع المحسوب</b></div>
+    <div class="tgrid c4" id="mr-grid" dir="ltr"></div>
+    <div class="kv" id="mr-asmaa"></div>
+    <div class="kv instr" id="mr-instructions"></div>
+    <p class="hint" dir="ltr">⚠️ Certains mots de l'instruction manuscrite étaient difficiles à lire avec certitude pour les maisons 3, 5, 11 et 16 (noms d'Allah partiels) — vérifiez ces passages avec votre document.</p>
+  </div>
+</section>
+
+<!-- ============ ZODIAQUE ============ -->
+<section id="zd" hidden>
+  <div class="card">
+    <div class="seg"><button type="button" id="zd-btnOcc" class="on">Occidentale</button><button type="button" id="zd-btnOri">Orientale</button></div>
+    <div class="inputs">
+      <label>Nom du talib (طالب)<input type="text" id="zd-talib" dir="rtl" placeholder="اكتب الاسم هنا"></label>
+      <label>Nom du matloub (مطلوب)<input type="text" id="zd-matloub" dir="rtl" placeholder="اكتب الاسم هنا"></label>
+    </div>
+    <div class="err" id="zd-errMsg" style="display:none">Veuillez entrer les deux noms.</div>
+    <button class="btn" id="zd-go">Calculer</button>
+  </div>
+  <div class="res" id="zd-resultSection" style="display:none">
+    <div class="card"><h3>Zodiaque</h3><div class="kv" id="zd-zodTalib"></div><div class="kv" id="zd-zodMatloub"></div></div>
+    <div class="card"><h3>Entrelacement des noms</h3><div class="letters" id="zd-nameBlock"></div><p class="hint" id="zd-nameBlockNote"></p></div>
+    <div class="card"><h3>Entrelacement des zodiaques</h3><div class="letters" id="zd-zodBlock"></div></div>
+    <div class="card"><h3>Fusion (zodiaque + noms)</h3><div class="letters" id="zd-fusionBlock"></div></div>
+    <div class="card"><h3>Allumage (chaque lettre + sa compatible)</h3><div class="pairbox" id="zd-allumeBlock"></div></div>
+    <div class="card"><h3>PM global &amp; carré (Ka'abou)</h3><div class="kv" id="zd-pmGlobal"></div><div class="kv" id="zd-expansion"></div><div class="kv" id="zd-kaabou"></div></div>
+    <div class="card"><h3>Blocs finaux (base des 9 rauhane)</h3>
+      <div class="blocks"><div><span class="lbl">Bloc talib</span><span id="zd-finalTalib"></span></div><div><span class="lbl">Bloc matloub</span><span id="zd-finalMatloub"></span></div></div>
+    </div>
+    <div class="card"><h3>9 rauhane — Talib</h3><div id="zd-rauhaneTalib"></div></div>
+    <div class="card"><h3>9 rauhane — Matloub</h3><div id="zd-rauhaneMatloub"></div>
+      <p class="hint">Chaque nombre ci-dessus est le résultat du calcul (PM + carré − 51) ; le nom du rauhane correspondant à ce nombre doit être cherché dans votre table de référence (nataïdj hurouf).</p></div>
+    <div class="card"><h3>Texte d'invocation (976)</h3>
+      <p class="hint">La partie « 18 noms d'Allah » doit être complétée à la main (nécessite votre table nataïdj hurouf).</p>
+      <div id="zd-invocationText" class="invoc" dir="rtl"></div></div>
+    <div class="card"><h3>Méthode d'utilisation</h3>
+      <p class="txt">Écrire les lettres allumées sur un tissu de la couleur du zodiaque du matloub, mettre de l'huile d'olive dessus, et le jeter sur le feu en faisant les zikr.</p>
+      <p class="txt"><b>Nb :</b> à répéter pendant 12 jours.</p>
+      <img src="zodiaque.jpg" alt="Schéma du sceau" class="schema">
+    </div>
   </div>
 </section>
 
@@ -320,6 +448,7 @@ document.addEventListener("click",async e=>{
 function showTab(id){
   document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===id));
   document.querySelectorAll("main section").forEach(s=>s.hidden=s.id!==id);
+  const tb=document.querySelector(`nav button[data-tab="${id}"]`); if(tb&&tb.scrollIntoView) tb.scrollIntoView({block:"nearest",inline:"center"});
   try{localStorage.setItem("cm-tab",id);}catch(_){}
 }
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
@@ -343,5 +472,6 @@ if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 </script>
+<script src="techniques.js"></script>
 </body>
 </html>

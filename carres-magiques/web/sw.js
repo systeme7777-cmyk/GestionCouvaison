@@ -1,7 +1,5 @@
-const CACHE = "carres-magiques-v8";
-const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png",
-  "techniques/khatim-5x5.html", "techniques/khatim-compatibilite.html", "techniques/khatim-marabi3.html",
-  "techniques/khatim-mukhammas.html", "techniques/khatim-zodiaque.html"];
+const CACHE = "carres-magiques-v9";
+const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "techniques.js", "zodiaque.jpg"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
