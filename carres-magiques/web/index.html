@@ -32,7 +32,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-
 header{background:var(--brand);color:var(--brand-ink);padding:calc(14px + env(safe-area-inset-top)) 16px 0;position:sticky;top:0;z-index:5}
 header h1{margin:0 0 10px;font-size:20px;letter-spacing:.2px}
 nav{display:flex;gap:4px;overflow-x:auto}
-nav button{flex:1;min-width:0;border:0;background:transparent;color:inherit;opacity:.75;padding:10px 6px 12px;font:inherit;font-size:15px;font-weight:600;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav button{flex:1;min-width:0;border:0;background:transparent;color:inherit;opacity:.75;padding:10px 4px 12px;font:inherit;font-size:14px;font-weight:600;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
 nav button[aria-selected="true"]{opacity:1;border-bottom-color:#f5e6b8}
 main{max-width:640px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom))}
 section[hidden]{display:none}
@@ -49,7 +49,7 @@ input:focus{outline:2px solid var(--brand);outline-offset:1px}
 .steps{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0}
 .grid{display:grid;gap:3px;background:var(--ink);border:3px solid var(--ink);border-radius:6px;overflow:hidden;margin:4px 0 10px}
 .grid div{background:var(--cell);display:flex;align-items:center;justify-content:center;flex-direction:column;aspect-ratio:1/1;font-weight:700;font-variant-numeric:tabular-nums;padding:2px;text-align:center;line-height:1.1;overflow:hidden}
-.grid div small{font-size:9.5px;font-weight:600;color:var(--accent);margin-top:2px}
+.grid div small{font-size:11px;font-weight:600;color:var(--accent);margin-top:2px}
 .grid div.empty{background:var(--cell-empty)}
 .grid div.allah{color:var(--allah);font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif;font-size:min(5vw,24px)}
 .verdict{font-weight:700;font-size:14.5px}
@@ -66,9 +66,9 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
 <header>
   <h1>Carrés Magiques</h1>
   <nav role="tablist">
-    <button role="tab" data-tab="c1" aria-selected="true">Carré 1 (÷65)</button>
-    <button role="tab" data-tab="c2" aria-selected="false">Carré 2 (الله)</button>
-    <button role="tab" data-tab="c3" aria-selected="false">Carré 3 (4 nb)</button>
+    <button role="tab" data-tab="c1" aria-selected="true">5×5 Dayane (65)</button>
+    <button role="tab" data-tab="c2" aria-selected="false" dir="ltr">6×6&nbsp;<bdi lang="ar">الله</bdi></button>
+    <button role="tab" data-tab="c3" aria-selected="false">5×5 Askandari</button>
   </nav>
 </header>
 
@@ -76,8 +76,6 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
 <!-- ============ CARRÉ 1 ============ -->
 <section id="c1">
   <div class="card">
-    <h2>Carré 5×5 — nombre ÷ 65</h2>
-    <p class="hint">Le nombre est divisé par 65 (quotient Q, reste R). Chaque ligne, colonne et diagonale donne le nombre de départ. La case centrale reste vide.</p>
     <form class="inputs" data-form="c1">
       <label>Nombre<input type="number" inputmode="numeric" name="n" value="16807" min="65" required></label>
     </form>
@@ -90,12 +88,10 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
 <!-- ============ CARRÉ 2 ============ -->
 <section id="c2" hidden>
   <div class="card">
-    <h2>Carré 6×6 — الله</h2>
-    <p class="hint">On retire 46 du nombre, puis on divise par 4 (Q = première case, R = reste). 24 nombres sont placés selon le modèle ; les 12 cases « الله » restent fixes. Chaque ligne, colonne et diagonale (4 nombres) donne le nombre de départ.</p>
     <form class="inputs" data-form="c2">
       <label>Nombre<input type="number" inputmode="numeric" name="n" value="1382" min="100" required></label>
     </form>
-    <label class="toggle"><input type="checkbox" data-order="c2" data-lab="c2"> Afficher le numéro d'ordre des cases</label>
+    <label class="toggle"><input type="checkbox" data-order="c2" data-lab="c2" checked> Afficher l'ordre de remplissage</label>
     <button class="btn" data-go="c2">Calculer</button>
     <div class="err" data-err="c2"></div>
   </div>
@@ -105,8 +101,6 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
 <!-- ============ CARRÉ 3 ============ -->
 <section id="c3" hidden>
   <div class="card">
-    <h2>Carré 5×5 — quatre nombres</h2>
-    <p class="hint">Chaque nombre est divisé par 4 : la partie P = quotient, la partie S = P×3 + reste (donc P + S = le nombre). Les 4 nombres vont dans les coins, les autres cases sont des sommes de parties. Le total magique = somme des 4 nombres.</p>
     <form class="inputs four" data-form="c3">
       <label>① en bas à gauche<input type="number" inputmode="numeric" name="a1" value="1987" min="4" required></label>
       <label>② en bas à droite<input type="number" inputmode="numeric" name="a2" value="3855" min="4" required></label>
@@ -179,6 +173,14 @@ const T1=[
   [[5,0,0],[5,0,-1],[23,0,0],[25,1,1],[7,0,0]],
   [[20,1,1],[18,0,0],[22,0,0],[2,0,0],[3,0,-1]],
 ];
+/* Ordre de remplissage (numéros rouges du cahier, exemple 16807) */
+const O1=[
+  [16,10, 1,12,26],
+  [ 9,21,19,13, 3],
+  [15,11, 0,14,25],
+  [ 5, 6,23,24, 7],
+  [20,17,22, 2, 4],
+];
 function fmt1(t){
   if(!t) return "";
   let s=(t[0]===1?"":t[0])+"Q";
@@ -190,9 +192,9 @@ function calc1(N){
   if(!Number.isInteger(N)||N<65) throw "Entrez un nombre entier ≥ 65.";
   const Q=Math.floor(N/65), R=N%65;
   const g=T1.map(r=>r.map(t=>t?t[0]*Q+t[1]*R+t[2]:null));
-  const labels=T1.map(r=>r.map(fmt1));
+  const labels=O1.map(r=>r.map(o=>o?String(o):""));
   const steps=`${N} ÷ 65 = ${Q}\nR = ${R}`;
-  return {g,labels,steps,target:N,title:`Carré 1 — ${N}`};
+  return {g,labels,steps,target:N,title:`5×5 Dayane (65) — ${N}`};
 }
 
 /* ---------- CARRÉ 2 : 6×6 الله ----------
@@ -217,10 +219,10 @@ function calc2cahier(N){
   const T=T2;
   const valOf=o=>Q+o-1+(R&&C2.includes(o)?R:0);
   const g=T.map(r=>r.map(o=>o===A?ALLAH:valOf(o)));
-  const labels=T.map(r=>r.map(o=>o===A?"":"n°"+o));
+  const labels=T.map(r=>r.map(o=>o===A?"":String(o)));
   let steps=`${N} − 46 = ${D}\n${D} ÷ 4 = ${Q}\nR = ${R}\n\nCase n°1 = ${Q}, puis +1 à chaque case jusqu'à n°24.`;
   if(R) steps+=`\nReste ${R} : +${R} aux cases n° ${C2.join(", ")}.`;
-  return {g,labels,steps,target:N,title:`Carré 2 — ${N}`};
+  return {g,labels,steps,target:N,title:`6×6 الله — ${N}`};
 }
 function calc2(N, mode){
   if(mode==="cahier") return calc2cahier(N);
@@ -239,7 +241,7 @@ function calc2(N, mode){
   const labels=T2.map(r=>r.map(o=>o===A?"":"n°"+o));
   let steps=`${N} − 46 = ${D}\n${D} ÷ 4 = ${Q}\nR = ${R}\n\nCase n°1 = ${Q}, puis +1 à chaque case jusqu'à n°24.`;
   if(ADJ) steps+=`\nReste ${R} :\n  +${ADJ.plus} aux cases n° ${ADJ.P.join(", ")}\n  −${ADJ.moins} aux cases n° ${ADJ.M.join(", ")}\n(chaque ligne, colonne et diagonale gagne ${R}).`;
-  return {g,labels,steps,target:N,title:`Carré 2 — ${N}`};
+  return {g,labels,steps,target:N,title:`6×6 الله — ${N}`};
 }
 
 /* ---------- CARRÉ 3 : quatre nombres ---------- */
@@ -260,7 +262,7 @@ function calc3(a){
   const circ=["①","②","③","④"];
   const steps=a.map((x,i)=>`${circ[i]} ${x} ÷ 4 = ${p[i]}  → P${i+1} = ${p[i]}\n   ${p[i]}×3 + R(${r[i]}) = ${s[i]}  → S${i+1} = ${s[i]}`).join("\n")
     +`\n\nSomme magique = ${a.join(" + ")} = ${total}`;
-  return {g,labels,steps,target:total,title:`Carré 3 — ${a.join(", ")}`};
+  return {g,labels,steps,target:total,title:`5×5 Askandari — ${a.join(", ")}`};
 }
 
 /* ---------- interface ---------- */
