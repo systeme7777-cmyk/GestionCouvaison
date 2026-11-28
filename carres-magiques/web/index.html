@@ -151,6 +151,14 @@ html.locked body>header, html.locked body>main{display:none}
 .shake{animation:shake .35s}
 @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 .signature{text-align:center;margin:26px 0 6px;font-size:11.5px;letter-spacing:3px;font-weight:800;color:var(--gold)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.stat span{display:block;font-size:12.5px;color:var(--muted);font-weight:700;letter-spacing:.3px}
+.stat b{display:block;font-size:26px;font-variant-numeric:tabular-nums;margin-top:2px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:420px;margin:0 auto 14px}
+.g3 div{aspect-ratio:1/1;display:grid;place-items:center;background:var(--bg);border:1px solid var(--line);border-radius:14px;font-weight:800;font-size:min(7.5vw,32px);font-variant-numeric:tabular-nums}
+.g3 div.mid{background:var(--card);border:2px solid var(--gold);color:var(--brand2)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .g3 div.mid{color:var(--gold)} }
 </style>
 </head>
 <body>
@@ -222,6 +230,20 @@ html.locked body>header, html.locked body>main{display:none}
     <div class="err" data-err="c3"></div>
   </div>
   <div class="card" data-out="c3"></div>
+</section>
+
+<!-- ============ KHATIM 3×3 (Damir / Nom) ============ -->
+<section id="k3" hidden>
+  <div class="card">
+    <div class="seg"><button type="button" id="k3-occ" class="on">Occidentale</button><button type="button" id="k3-ori">Orientale</button></div>
+    <div class="inputs four">
+      <label>Damir (ضمير)<input type="number" inputmode="numeric" id="k3-damir" value="1652"></label>
+      <label>Nom (اسم)<input type="text" id="k3-nom" value="129" placeholder="129 ou لطيف"></label>
+    </div>
+    <div class="err" id="k3-err"></div>
+    <button class="btn" id="k3-go">Calculer</button>
+  </div>
+  <div class="card" id="k3-out" hidden></div>
 </section>
 
 <!-- ============ KHATIM 5×5 ============ -->
@@ -512,6 +534,7 @@ const KHAWATIM=[
   {id:"c1",t:"Dayane (65)",size:"5×5",n:5,mark:[[0,2],[1,1],[3,3],[4,2],[2,0],[2,4]],empty:[[2,2]]},
   {id:"c2",t:"الله",size:"6×6",n:6,mark:[[0,0],[0,5],[5,0],[5,5],[1,2],[1,3],[4,2],[4,3],[2,1],[3,1],[2,4],[3,4]]},
   {id:"c3",t:"Askandari",size:"5×5",n:5,mark:[[0,0],[0,4],[4,0],[4,4]],empty:[[2,2]]},
+  {id:"k3",t:"Khatim 3×3",size:"3×3",ar:"ضمير · اسم",n:3,mark:[[1,1]],empty:[]},
   {id:"k5",t:"Khatim 5×5",size:"5×5",n:5,mark:[[0,0],[1,1],[3,3],[4,4],[0,4],[4,0]],empty:[[2,2]]},
   {id:"cp",t:"Rakoun Hakim",size:"4×4",ar:"طالب · مطلوب",n:4,mark:[[0,0],[1,1],[2,2],[3,3]]},
   {id:"mr",t:"سر المربعات",size:"4×4",ar:"16 بيتاً",n:4,mark:[[1,2],[2,1]],empty:[[0,3]]},
@@ -571,6 +594,49 @@ try{
   const d=JSON.parse(localStorage.getItem("cm-inputs")||"{}");
   document.querySelectorAll("[data-form] input").forEach(i=>{const k=i.closest("[data-form]").dataset.form+"."+i.name;if(d[k])i.value=d[k];});
 }catch(_){}
+
+/* ---------- KHATIM 3×3 : Damir ÷ 3 autour du centre, pas = Nom ----------
+   Disposition (c = centre, s = Nom, R = reste) :
+     c+s        c−2s+(R+1)   c+s−1
+     c−1        c            c+(R+1)
+     c−s+(R+1)  c+2s−1       c−s
+   Lignes, colonnes et diagonale / = Damir ; diagonale \ = 3c (Damir − R). */
+const ABJAD_ORI={'ا':1,'أ':1,'إ':1,'آ':1,'ء':1,'ب':2,'ج':3,'د':4,'ه':5,'ة':5,'و':6,'ؤ':6,'ز':7,'ح':8,'ط':9,'ي':10,'ى':10,'ئ':10,'ك':20,'ل':30,'م':40,'ن':50,'س':60,'ع':70,'ف':80,'ص':90,'ق':100,'ر':200,'ش':300,'ت':400,'ث':500,'خ':600,'ذ':700,'ض':800,'ظ':900,'غ':1000};
+const ABJAD_OCC=Object.assign({},ABJAD_ORI,{'ص':60,'ض':90,'س':300,'ظ':800,'غ':900,'ش':1000});
+let k3sys="occ";
+function valeurNom(t){
+  t=String(t).trim();
+  if(/^\d+$/.test(t)) return parseInt(t,10);
+  const tb=k3sys==="occ"?ABJAD_OCC:ABJAD_ORI; let v=0,n=0;
+  for(const ch of t){ if(tb[ch]!==undefined){v+=tb[ch];n++;} }
+  return n?v:NaN;
+}
+function calcK3(D,s){
+  if(!Number.isInteger(D)||D<9) throw "Entrez le Damir (nombre entier).";
+  if(!Number.isInteger(s)||s<1) throw "Entrez le Nom (nombre ou nom en arabe).";
+  const c=Math.floor(D/3), R=D%3, x=R+1;
+  const g=[[c+s, c-2*s+x, c+s-1],[c-1, c, c+x],[c-s+x, c+2*s-1, c-s]];
+  return {g,c,R};
+}
+function runK3(){
+  const out=document.getElementById("k3-out"), err=document.getElementById("k3-err");
+  err.textContent="";
+  try{
+    const D=+document.getElementById("k3-damir").value, nomTxt=document.getElementById("k3-nom").value, s=valeurNom(nomTxt);
+    const r=calcK3(D,s);
+    const stat=(l,v)=>`<div class="stat"><span>${l}</span><b>${v}</b></div>`;
+    let h=`<div class="stats">${stat("Damir",D)}${stat("Nom",s)}${stat("Centre",r.c)}${stat("Reste",r.R)}</div><div class="g3">`;
+    r.g.forEach((row,i)=>row.forEach((v,j)=>{ h+=`<div class="${i===1&&j===1?"mid":""}">${v}</div>`; }));
+    h+="</div>";
+    lastText.k3=`Khatim 3×3 — Damir ${D}, Nom ${s}\nCentre ${r.c}, Reste ${r.R}\n\n`+r.g.map(x=>x.join("  ")).join("\n");
+    out.innerHTML=h+actions("k3"); out.hidden=false;
+  }catch(e){ err.textContent=typeof e==="string"?e:"Erreur de calcul."; out.hidden=true; }
+}
+document.getElementById("k3-go").addEventListener("click",runK3);
+["k3-damir","k3-nom"].forEach(id=>document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();runK3();}}));
+document.getElementById("k3-occ").addEventListener("click",()=>{k3sys="occ";document.getElementById("k3-occ").classList.add("on");document.getElementById("k3-ori").classList.remove("on");runK3();});
+document.getElementById("k3-ori").addEventListener("click",()=>{k3sys="ori";document.getElementById("k3-ori").classList.add("on");document.getElementById("k3-occ").classList.remove("on");runK3();});
+runK3();
 ["c1","c2","c3"].forEach(run);
 showTab(location.hash.slice(1));
 
