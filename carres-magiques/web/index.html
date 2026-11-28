@@ -159,6 +159,13 @@ html.locked body>header, html.locked body>main{display:none}
 .g3 div{aspect-ratio:1/1;display:grid;place-items:center;background:var(--bg);border:1px solid var(--line);border-radius:14px;font-weight:800;font-size:min(7.5vw,32px);font-variant-numeric:tabular-nums}
 .g3 div.mid{background:var(--card);border:2px solid var(--gold);color:var(--brand2)}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .g3 div.mid{color:var(--gold)} }
+.frame3{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"t t t" "l g r" "b b b";gap:8px;align-items:center;justify-items:center;border:2px solid var(--gold);border-radius:16px;padding:10px 8px;margin:0 0 14px;background:var(--bg)}
+.frame3 .g3{grid-area:g;margin:0;width:100%}
+.frame3 .v{color:var(--brand2);font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif;font-weight:700;font-size:min(4.4vw,19px);line-height:1.5;text-align:center;direction:rtl}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .frame3 .v{color:var(--gold)} }
+.frame3 .vt{grid-area:t}.frame3 .vb{grid-area:b}
+.frame3 .vl{grid-area:l;writing-mode:vertical-rl;transform:rotate(180deg)}
+.frame3 .vr{grid-area:r;writing-mode:vertical-rl}
 </style>
 </head>
 <body>
@@ -534,7 +541,7 @@ const KHAWATIM=[
   {id:"c1",t:"Dayane (65)",size:"5×5",n:5,mark:[[0,2],[1,1],[3,3],[4,2],[2,0],[2,4]],empty:[[2,2]]},
   {id:"c2",t:"الله",size:"6×6",n:6,mark:[[0,0],[0,5],[5,0],[5,5],[1,2],[1,3],[4,2],[4,3],[2,1],[3,1],[2,4],[3,4]]},
   {id:"c3",t:"Askandari",size:"5×5",n:5,mark:[[0,0],[0,4],[4,0],[4,4]],empty:[[2,2]]},
-  {id:"k3",t:"Khatim 3×3",size:"3×3",ar:"ضمير · اسم",n:3,mark:[[1,1]],empty:[]},
+  {id:"k3",t:"المجاذب",size:"3×3",ar:"ضمير · اسم",n:3,mark:[[1,1]],empty:[]},
   {id:"k5",t:"Khatim 5×5",size:"5×5",n:5,mark:[[0,0],[1,1],[3,3],[4,4],[0,4],[4,0]],empty:[[2,2]]},
   {id:"cp",t:"Rakoun Hakim",size:"4×4",ar:"طالب · مطلوب",n:4,mark:[[0,0],[1,1],[2,2],[3,3]]},
   {id:"mr",t:"سر المربعات",size:"4×4",ar:"16 بيتاً",n:4,mark:[[1,2],[2,1]],empty:[[0,3]]},
@@ -611,6 +618,8 @@ function valeurNom(t){
   for(const ch of t){ if(tb[ch]!==undefined){v+=tb[ch];n++;} }
   return n?v:NaN;
 }
+/* Verset entourant le carré (Yā-Sīn 36:81-82) : haut, gauche, bas, droite */
+const VERSET=["أوليس الذي خلق السماوات والأرض بقادر","على أن يخلق مثلهم بلى","وهو الخلاق العليم إنما أمره إذا أراد شيئا","أن يقول له كن فيكون"];
 function calcK3(D,s){
   if(!Number.isInteger(D)||D<9) throw "Entrez le Damir (nombre entier).";
   if(!Number.isInteger(s)||s<1) throw "Entrez le Nom (nombre ou nom en arabe).";
@@ -625,10 +634,11 @@ function runK3(){
     const D=+document.getElementById("k3-damir").value, nomTxt=document.getElementById("k3-nom").value, s=valeurNom(nomTxt);
     const r=calcK3(D,s);
     const stat=(l,v)=>`<div class="stat"><span>${l}</span><b>${v}</b></div>`;
-    let h=`<div class="stats">${stat("Damir",D)}${stat("Nom",s)}${stat("Centre",r.c)}${stat("Reste",r.R)}</div><div class="g3">`;
+    let h=`<div class="stats">${stat("Damir",D)}${stat("Nom",s)}${stat("Centre",r.c)}${stat("Reste",r.R)}</div>`;
+    h+=`<div class="frame3" lang="ar"><span class="v vt">${VERSET[0]}</span><span class="v vl">${VERSET[1]}</span><div class="g3">`;
     r.g.forEach((row,i)=>row.forEach((v,j)=>{ h+=`<div class="${i===1&&j===1?"mid":""}">${v}</div>`; }));
-    h+="</div>";
-    lastText.k3=`Khatim 3×3 — Damir ${D}, Nom ${s}\nCentre ${r.c}, Reste ${r.R}\n\n`+r.g.map(x=>x.join("  ")).join("\n");
+    h+=`</div><span class="v vr">${VERSET[3]}</span><span class="v vb">${VERSET[2]}</span></div>`;
+    lastText.k3=`المجاذب — Damir ${D}, Nom ${s}\nCentre ${r.c}, Reste ${r.R}\n\n`+r.g.map(x=>x.join("  ")).join("\n")+"\n\n"+VERSET.join(" ");
     out.innerHTML=h+actions("k3"); out.hidden=false;
   }catch(e){ err.textContent=typeof e==="string"?e:"Erreur de calcul."; out.hidden=true; }
 }
