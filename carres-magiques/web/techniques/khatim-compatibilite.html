@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Khatim Compatibilité</title>
+<style>
+  :root{
+    --paper:#f2ead9;
+    --paper-dark:#e7dcc2;
+    --ink:#2b2320;
+    --ink-soft:#5b4c3f;
+    --line:#8a7457;
+    --accent:#8c2f2f;
+    --gold:#a9822f;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0;
+    background:var(--paper);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(169,130,47,0.08), transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(140,47,47,0.06), transparent 45%);
+    color:var(--ink);
+    font-family:'Georgia','Amiri',serif;
+    min-height:100vh;
+  }
+  .wrap{ max-width:560px; margin:0 auto; padding:26px 16px 60px; }
+  header{ text-align:center; margin-bottom:20px; }
+  header h1{ font-size:1.4rem; margin:0 0 4px; letter-spacing:0.03em; }
+  header .sub{ font-size:0.82rem; color:var(--ink-soft); font-style:italic; }
+  .card{
+    background:var(--paper-dark);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:16px;
+    margin-bottom:18px;
+    box-shadow:0 1px 0 rgba(255,255,255,0.4) inset, 0 6px 14px rgba(43,35,32,0.08);
+  }
+  label{ display:block; font-size:0.78rem; color:var(--ink-soft); margin-bottom:5px; }
+  input[type=text]{
+    width:100%; font-family:inherit; font-size:1rem; padding:10px 12px;
+    border:1px solid var(--line); border-radius:3px; background:#fbf6ea; color:var(--ink);
+    direction:rtl; margin-bottom:12px;
+  }
+  button{
+    width:100%; padding:13px; font-size:1rem; letter-spacing:0.03em;
+    background:var(--accent); color:#f2ead9; border:none; border-radius:3px;
+    cursor:pointer; font-family:inherit;
+  }
+  button:active{ background:#701f1f; }
+  .note{ font-size:0.76rem; color:var(--ink-soft); margin-top:8px; line-height:1.4; }
+  .error{ color:var(--accent); font-size:0.85rem; margin-top:8px; display:none; }
+  h2.section-title{
+    font-size:0.95rem; text-align:center; color:var(--ink-soft); margin:0 0 10px;
+    border-bottom:1px solid var(--line); padding-bottom:6px;
+  }
+  .grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:2px;
+    background:var(--line); border:2px solid var(--line); aspect-ratio:1/1; margin-bottom:8px;
+  }
+  .cell{
+    background:#fbf6ea; display:flex; align-items:center; justify-content:center;
+    font-family:'Courier New',monospace; font-size:0.95rem; color:var(--ink);
+  }
+  .detail{ font-size:0.76rem; color:var(--ink-soft); text-align:center; margin-bottom:4px; }
+  .final-wrap{ position:relative; padding:26px 14px; }
+  .side-label{
+    position:absolute; font-size:0.85rem; color:var(--gold); letter-spacing:0.05em;
+  }
+  .side-top{ top:2px; left:0; right:0; text-align:center; }
+  .side-bottom{ bottom:2px; left:0; right:0; text-align:center; }
+  .side-left{ left:-2px; top:0; bottom:0; writing-mode:vertical-rl; display:flex; align-items:center; }
+  .side-right{ right:-2px; top:0; bottom:0; writing-mode:vertical-rl; display:flex; align-items:center; }
+  #resultSection{ display:none; }
+</style>
+</head>
+<body>
+<a href="../index.html" id="retour-cm" style="position:sticky;top:0;z-index:50;display:block;background:#1f4e3d;color:#fff;font:600 16px system-ui,-apple-system,Roboto,sans-serif;text-decoration:none;padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top))">&larr; Retour</a>
+
+<div class="wrap">
+  <header>
+    <h1>Khatim Compatibilité</h1>
+    <div class="sub">Carré talib / matloub — méthode des 4 éléments</div>
+  </header>
+
+  <div class="card">
+    <label>Système abjad</label>
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+      <button type="button" id="btnOcc" onclick="setSystem('occ')" style="flex:1; background:var(--gold); padding:9px; font-size:0.85rem;">OCCIDENTALE</button>
+      <button type="button" id="btnOri" onclick="setSystem('ori')" style="flex:1; background:#c9bd9f; color:var(--ink); padding:9px; font-size:0.85rem;">ORIENTALE</button>
+    </div>
+    <label for="talib">Nom du talib (طالب)</label>
+    <input type="text" id="talib" placeholder="اكتب الاسم هنا">
+    <label for="talibNum">— ou nombre du talib déjà calculé</label>
+    <input type="text" id="talibNum" inputmode="numeric" placeholder="ex : 1507">
+    <label for="matloub">Nom du matloub (مطلوب)</label>
+    <input type="text" id="matloub" placeholder="اكتب الاسم هنا">
+    <label for="matloubNum">— ou nombre du matloub déjà calculé</label>
+    <input type="text" id="matloubNum" inputmode="numeric" placeholder="ex : 1007">
+    <div class="error" id="errMsg">Veuillez entrer un nom ou un nombre pour le talib et le matloub.</div>
+    <button onclick="calculer()">Calculer</button>
+    <div class="note">Le total abjad de chaque nom sert à générer son carré 4×4 individuel ; les carrés sont ensuite fusionnés par éléments (feu, air, terre, eau) pour former le carré final.</div>
+  </div>
+
+  <div id="resultSection">
+    <div class="card">
+      <h2 class="section-title">Carré du talib</h2>
+      <div class="grid" id="gridTalib"></div>
+      <div class="detail" id="detailTalib"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Carré du matloub</h2>
+      <div class="grid" id="gridMatloub"></div>
+      <div class="detail" id="detailMatloub"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Carré final</h2>
+      <div class="final-wrap">
+        <div class="side-label side-top">يا حكيم</div>
+        <div class="side-label side-bottom">يا حكيم</div>
+        <div class="side-label side-left">يا ودود</div>
+        <div class="side-label side-right">يا ودود</div>
+        <div class="grid" id="gridFinal"></div>
+      </div>
+      <div class="detail" id="detailFinal"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Table abjad ORIENTALE (Mashriqi - standard)
+const abjadOrientale = {
+  'ا':1,'أ':1,'إ':1,'آ':1,'ب':2,'ج':3,'د':4,'ه':5,'ة':5,'و':6,'ز':7,'ح':8,'ط':9,'ي':10,'ى':10,
+  'ك':20,'ل':30,'م':40,'ن':50,'س':60,'ع':70,'ف':80,'ص':90,
+  'ق':100,'ر':200,'ش':300,'ت':400,'ث':500,'خ':600,'ذ':700,'ض':800,'ظ':900,'غ':1000
+};
+// Table abjad OCCIDENTALE (Maghribi)
+const abjadOccidentale = {
+  'ا':1,'أ':1,'إ':1,'آ':1,'ب':2,'ج':3,'د':4,'ه':5,'ة':5,'و':6,'ز':7,'ح':8,'ط':9,'ي':10,'ى':10,
+  'ك':20,'ل':30,'م':40,'ن':50,'ص':60,'ع':70,'ف':80,'ض':90,
+  'ق':100,'ر':200,'س':300,'ت':400,'ث':500,'خ':600,'ذ':700,'ظ':800,'غ':900,'ش':1000
+};
+let abjadValues = abjadOccidentale;
+
+// Index de position (1-16) des 16 lettres utilisées dans le carré magique de base
+const posIndex = {'ا':1,'ب':2,'ج':3,'د':4,'ه':5,'و':6,'ز':7,'ح':8,'ط':9,'ي':10,'ك':11,'ل':12,'م':13,'ن':14,'س':15,'ع':16};
+
+// Regroupement par élément (selon position, carré latin confirmé)
+const feuPos   = [1,8,10,15];
+const terrePos = [2,7,9,16];
+const airPos   = [3,6,12,13];
+const eauPos   = [4,5,11,14];
+
+// Modèle "Occidentale" (ordre de remplissage des cases, ligne par ligne)
+const occidentaleTemplate = [8,11,14,1, 13,2,7,12, 3,16,9,6, 10,5,4,15];
+// Modèle de fusion finale
+const finalTemplate = [14,11,8,1, 4,5,10,15, 9,16,3,6, 7,2,13,12];
+
+function setSystem(sys){
+  abjadValues = (sys === 'occ') ? abjadOccidentale : abjadOrientale;
+  const occBtn = document.getElementById('btnOcc');
+  const oriBtn = document.getElementById('btnOri');
+  if(sys === 'occ'){
+    occBtn.style.background = 'var(--gold)';
+    oriBtn.style.background = '#c9bd9f';
+  } else {
+    oriBtn.style.background = 'var(--gold)';
+    occBtn.style.background = '#c9bd9f';
+  }
+}
+
+function abjadTotal(name){
+  let total = 0;
+  for(const ch of name){
+    if(abjadValues[ch] !== undefined) total += abjadValues[ch];
+  }
+  return total;
+}
+
+function buildIndividualSquare(N){
+  const shifted = N - 30;
+  const R = ((shifted % 4) + 4) % 4;
+  const base = (shifted - R) / 4;
+
+  const valueByPos = {};
+  occidentaleTemplate.forEach(T => {
+    valueByPos[T] = base + (T-1) + (T>12 ? R : 0);
+  });
+
+  const sumOf = positions => positions.reduce((s,p)=> s+valueByPos[p], 0);
+
+  return {
+    N, base, R, valueByPos,
+    Feu: sumOf(feuPos), Terre: sumOf(terrePos), Air: sumOf(airPos), Eau: sumOf(eauPos),
+    gridValues: occidentaleTemplate.map(T => valueByPos[T])
+  };
+}
+
+function renderGrid(elId, values){
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  values.forEach(v => {
+    const c = document.createElement('div');
+    c.className = 'cell';
+    c.textContent = v;
+    el.appendChild(c);
+  });
+}
+
+function calculer(){
+  const talibName = document.getElementById('talib').value.trim();
+  const matloubName = document.getElementById('matloub').value.trim();
+  const talibNumRaw = document.getElementById('talibNum').value.trim();
+  const matloubNumRaw = document.getElementById('matloubNum').value.trim();
+  const errEl = document.getElementById('errMsg');
+
+  const talibN = talibNumRaw ? parseInt(talibNumRaw, 10) : (talibName ? abjadTotal(talibName) : NaN);
+  const matloubN = matloubNumRaw ? parseInt(matloubNumRaw, 10) : (matloubName ? abjadTotal(matloubName) : NaN);
+
+  if(isNaN(talibN) || isNaN(matloubN)){
+    errEl.style.display = 'block';
+    document.getElementById('resultSection').style.display = 'none';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const talib = buildIndividualSquare(talibN);
+  const matloub = buildIndividualSquare(matloubN);
+
+  renderGrid('gridTalib', talib.gridValues);
+  document.getElementById('detailTalib').textContent =
+    `N=${talib.N} → base=${talib.base}, reste=${talib.R} · Feu=${talib.Feu} Terre=${talib.Terre} Air=${talib.Air} Eau=${talib.Eau}`;
+
+  renderGrid('gridMatloub', matloub.gridValues);
+  document.getElementById('detailMatloub').textContent =
+    `N=${matloub.N} → base=${matloub.base}, reste=${matloub.R} · Feu=${matloub.Feu} Terre=${matloub.Terre} Air=${matloub.Air} Eau=${matloub.Eau}`;
+
+  // Fusion finale
+  const S1 = matloub.Feu + talib.Air;
+  const S2 = matloub.Terre + talib.Eau;
+  const rem1 = S1 % 2;
+  const rem2 = S2 % 2;
+  const base1 = Math.floor(S1/2) - 3;
+  const base2 = Math.floor(S2/2) - 4;
+
+  const finalValues = finalTemplate.map(T => {
+    if(T <= 8) return base1 + (T-1) + (T>=5 ? rem1 : 0);
+    return base2 + (T-9) + (T>=13 ? rem2 : 0);
+  });
+  renderGrid('gridFinal', finalValues);
+  document.getElementById('detailFinal').textContent =
+    `S1 (Feu matloub + Air talib) = ${S1} → base1=${base1}${rem1?' (+1 dès la 5e case)':''} · S2 (Terre matloub + Eau talib) = ${S2} → base2=${base2}${rem2?' (+1 dès la 13e case)':''}`;
+
+  document.getElementById('resultSection').style.display = 'block';
+  document.getElementById('resultSection').scrollIntoView({behavior:'smooth', block:'start'});
+}
+</script>
+</body>
+</html>

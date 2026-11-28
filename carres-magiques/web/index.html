@@ -31,8 +31,8 @@
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
 header{background:var(--brand);color:var(--brand-ink);padding:calc(14px + env(safe-area-inset-top)) 16px 0;position:sticky;top:0;z-index:5}
 header h1{margin:0 0 10px;font-size:20px;letter-spacing:.2px}
-nav{display:flex;gap:4px;overflow-x:auto}
-nav button{flex:1;min-width:0;border:0;background:transparent;color:inherit;opacity:.75;padding:10px 4px 12px;font:inherit;font-size:14px;font-weight:600;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav{display:flex;gap:0;overflow-x:auto;margin:0 -8px}
+nav button{flex:1 0 auto;min-width:0;border:0;background:transparent;color:inherit;opacity:.75;padding:10px 5px 12px;font:inherit;font-size:13px;font-weight:600;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
 nav button[aria-selected="true"]{opacity:1;border-bottom-color:#f5e6b8}
 main{max-width:640px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom))}
 section[hidden]{display:none}
@@ -59,6 +59,10 @@ input:focus{outline:2px solid var(--brand);outline-offset:1px}
 .actions{display:flex;gap:8px;margin-top:4px}
 .actions .btn{margin-top:0;background:transparent;color:var(--brand);border:1.5px solid var(--brand);padding:10px;font-size:14.5px}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .actions .btn{color:#8fd6b6;border-color:#8fd6b6} }
+.tech{display:flex;flex-direction:column;gap:2px;padding:14px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;text-decoration:none;color:var(--ink);background:var(--cell)}
+.tech:last-child{margin-bottom:0}
+.tech b{font-size:17px}
+.tech span{font-size:13px;color:var(--muted)}
 footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
 </style>
 </head>
@@ -69,6 +73,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
     <button role="tab" data-tab="c1" aria-selected="true">5×5 Dayane (65)</button>
     <button role="tab" data-tab="c2" aria-selected="false" dir="ltr">6×6&nbsp;<bdi lang="ar">الله</bdi></button>
     <button role="tab" data-tab="c3" aria-selected="false">5×5 Askandari</button>
+    <button role="tab" data-tab="plus" aria-selected="false">Autres</button>
   </nav>
 </header>
 
@@ -112,6 +117,17 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
     <div class="err" data-err="c3"></div>
   </div>
   <div class="card" data-out="c3"></div>
+</section>
+
+<!-- ============ AUTRES TECHNIQUES ============ -->
+<section id="plus" hidden>
+  <div class="card">
+    <a class="tech" href="techniques/khatim-5x5.html"><b>Khatim 5×5</b><span>Méthode par croisement</span></a>
+    <a class="tech" href="techniques/khatim-compatibilite.html"><b>Khatim Compatibilité</b><span>Talib / matloub — 4 éléments</span></a>
+    <a class="tech" href="techniques/khatim-marabi3.html"><b lang="ar">سر المربعات</b><span>Les 16 maisons</span></a>
+    <a class="tech" href="techniques/khatim-mukhammas.html"><b lang="ar">سر الخمس تهمان</b><span>Carré 5×5 mukhammas</span></a>
+    <a class="tech" href="techniques/khatim-zodiaque.html"><b>Khatim Zodiaque</b><span>Talib / matloub — zodiaque</span></a>
+  </div>
 </section>
 
 <footer>Fonctionne hors ligne une fois installée.</footer>
