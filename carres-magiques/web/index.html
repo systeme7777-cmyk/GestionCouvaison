@@ -166,6 +166,11 @@ html.locked body>header, html.locked body>main{display:none}
 .frame3 .vt{grid-area:t}.frame3 .vb{grid-area:b}
 .frame3 .vl{grid-area:l;writing-mode:vertical-rl;transform:rotate(180deg)}
 .frame3 .vr{grid-area:r;writing-mode:vertical-rl}
+.tjrow{display:grid;grid-template-columns:34px 1fr 64px;align-items:center;gap:8px;flex-direction:row}
+.tjrow .tjl{font-size:24px;color:var(--accent);text-align:center;font-weight:700}
+.tjrow input{font-size:18px;padding:10px 12px}
+.tjrow .tjv{text-align:right;font-size:17px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.tgrid .cell .value.base{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -254,6 +259,30 @@ html.locked body>header, html.locked body>main{display:none}
     <button class="btn" id="k3-go">Calculer</button>
   </div>
   <div class="card" id="k3-out" hidden></div>
+</section>
+
+<!-- ============ TIDJANI ============ -->
+<section id="tj" hidden>
+  <div class="card">
+    <div class="seg"><button type="button" id="tj-occ" class="on">Occidentale</button><button type="button" id="tj-ori">Orientale</button></div>
+    <div class="inputs">
+      <label class="tjrow"><span class="tjl ar">خ</span><input type="text" dir="rtl" id="tj-b0" value="ما عندكم"><span class="tjv" id="tj-v0"></span></label>
+      <label class="tjrow"><span class="tjl ar">د</span><input type="text" dir="rtl" id="tj-b1" value="ينفد"><span class="tjv" id="tj-v1"></span></label>
+      <label class="tjrow"><span class="tjl ar">و</span><input type="text" dir="rtl" id="tj-b2" value="وما عند الله"><span class="tjv" id="tj-v2"></span></label>
+      <label class="tjrow"><span class="tjl ar">ي</span><input type="text" dir="rtl" id="tj-b3" value="باق"><span class="tjv" id="tj-v3"></span></label>
+      <label class="tjrow"><span class="tjl ar">ع</span><input type="text" dir="rtl" id="tj-b4" value="إن هذا"><span class="tjv" id="tj-v4"></span></label>
+      <label class="tjrow"><span class="tjl ar">ر</span><input type="text" dir="rtl" id="tj-b5" value="لرزقنا"><span class="tjv" id="tj-v5"></span></label>
+      <label class="tjrow"><span class="tjl ar">ت</span><input type="text" dir="rtl" id="tj-b6" value="ماله"><span class="tjv" id="tj-v6"></span></label>
+      <label class="tjrow"><span class="tjl ar">ب</span><input type="text" dir="rtl" id="tj-b7" value="من نفاد"><span class="tjv" id="tj-v7"></span></label>
+    </div>
+    <div class="inputs four" style="margin-top:12px">
+      <label>Total visé<input type="number" inputmode="numeric" id="tj-cible" value="2156" placeholder="facultatif"></label>
+      <label>Besoin (centre)<input type="text" dir="rtl" id="tj-besoin" placeholder="facultatif"></label>
+    </div>
+    <div class="err" id="tj-err"></div>
+    <button class="btn" id="tj-go">Calculer</button>
+  </div>
+  <div class="card" id="tj-out" hidden></div>
 </section>
 
 <!-- ============ KHATIM 5×5 ============ -->
@@ -545,6 +574,7 @@ const KHAWATIM=[
   {id:"c2",t:"الله",size:"6×6",n:6,mark:[[0,0],[0,5],[5,0],[5,5],[1,2],[1,3],[4,2],[4,3],[2,1],[3,1],[2,4],[3,4]]},
   {id:"c3",t:"Askandari",size:"5×5",n:5,mark:[[0,0],[0,4],[4,0],[4,4]],empty:[[2,2]]},
   {id:"k3",t:"المجاذب",size:"3×3",ar:"ضمير · اسم",n:3,mark:[[1,1]],empty:[]},
+  {id:"tj",t:"Tidjani",size:"5×5",n:5,mark:[[0,0],[0,4],[1,0],[1,4],[3,0],[3,4],[4,1],[4,3]],empty:[[2,2]]},
   {id:"k5",t:"Khatim 5×5",size:"5×5",n:5,mark:[[0,0],[1,1],[3,3],[4,4],[0,4],[4,0]],empty:[[2,2]]},
   {id:"cp",t:"Rakoun Hakim",size:"4×4",ar:"طالب · مطلوب",n:4,mark:[[0,0],[1,1],[2,2],[3,3]]},
   {id:"mr",t:"سر المربعات",size:"4×4",ar:"16 بيتاً",n:4,mark:[[1,2],[2,1]],empty:[[0,3]]},
@@ -654,6 +684,55 @@ document.getElementById("k3-demande").addEventListener("input",runK3);
 document.getElementById("k3-occ").addEventListener("click",()=>{k3sys="occ";document.getElementById("k3-occ").classList.add("on");document.getElementById("k3-ori").classList.remove("on");runK3();});
 document.getElementById("k3-ori").addEventListener("click",()=>{k3sys="ori";document.getElementById("k3-ori").classList.add("on");document.getElementById("k3-occ").classList.remove("on");runK3();});
 runK3();
+
+/* ---------- TIDJANI (5×5 lettres) ----------
+   8 cases de base (خ د و ي ع ر ت ب) = valeurs abjad des morceaux de versets ;
+   les 16 autres cases = sommes de deux cases de base ; centre (م) vide.
+   Chaque ligne, colonne et diagonale = somme des 8 bases. Avec un « total visé »,
+   l'écart est ajouté à la case ع (comme 757 → 758 dans le cahier). */
+const TJ_BASE=["خ","د","و","ي","ع","ر","ت","ب"];
+const TJ_SUM={"ا":["ر","خ"],"ه":["ع","ت"],"ج":["و","ي"],"ز":["د","ع"],"ح":["ت","خ"],"ط":["ب","ر"],"ك":["ب","ت"],"ل":["ي","ر"],
+  "ن":["و","ع"],"ص":["د","خ"],"ف":["و","خ"],"ض":["ب","د"],"ق":["ي","ت"],"س":["د","ي"],"ث":["ع","ر"],"ذ":["ب","و"]};
+const TJ_GRID=[["ا","ب","ج","د","ه"],["و","ز","ح","ط","ي"],["ك","ل","م","ن","ص"],["ع","ف","ض","ق","ر"],["س","ت","ث","خ","ذ"]];
+let tjsys="occ";
+function tjValeur(t){
+  t=String(t).trim(); if(/^\d+$/.test(t)) return parseInt(t,10);
+  const tb=tjsys==="occ"?ABJAD_OCC:ABJAD_ORI; let v=0,n=0;
+  for(const ch of t){ if(tb[ch]!==undefined){v+=tb[ch];n++;} }
+  return n?v:NaN;
+}
+function runTJ(){
+  const out=document.getElementById("tj-out"), err=document.getElementById("tj-err"); err.textContent="";
+  const val={}, brut=[];
+  for(let i=0;i<8;i++){
+    const v=tjValeur(document.getElementById("tj-b"+i).value);
+    document.getElementById("tj-v"+i).textContent=Number.isNaN(v)?"—":v;
+    if(Number.isNaN(v)){ err.textContent="Remplissez les 8 cases de base (mot arabe ou nombre)."; out.hidden=true; return; }
+    val[TJ_BASE[i]]=v; brut.push(v);
+  }
+  const somme=brut.reduce((a,b)=>a+b,0);
+  const cibleTxt=document.getElementById("tj-cible").value.trim(), cible=cibleTxt?parseInt(cibleTxt,10):NaN;
+  let ecart=0; if(Number.isInteger(cible)&&cible!==somme){ ecart=cible-somme; val["ع"]+=ecart; }
+  const total=somme+ecart;
+  for(const [l,[a,b]] of Object.entries(TJ_SUM)) val[l]=val[a]+val[b];
+  const besoin=document.getElementById("tj-besoin").value.trim();
+  const g=TJ_GRID.map(r=>r.map(l=>l==="م"?null:val[l]));
+  let steps=esc(`${brut.join(" + ")} = ${somme}`);
+  if(ecart) steps+=`\n<bdi class="ar">ع</bdi> : ${brut[4]} ${ecart>0?"+":"−"} ${Math.abs(ecart)} = ${val["ع"]}  →  ${total}`;
+  let h=`<pre class="steps" dir="ltr">${steps}</pre><div class="tgrid c5" dir="rtl">`;
+  TJ_GRID.forEach(r=>r.forEach(l=>{
+    if(l==="م") h+=`<div class="cell center"><span class="letter">م</span><span class="value">${esc(besoin||"—")}</span></div>`;
+    else h+=`<div class="cell"><span class="letter">${l}</span><span class="value${TJ_BASE.includes(l)?" base":""}">${val[l]}</span></div>`;
+  }));
+  h+="</div>"+renderVerdict(g,total,{sansDoublons:true});
+  lastText.tj=`Tidjani — total ${total}\n\n`+g.map(r=>r.slice().reverse().map(x=>x===null?"·":x).join("  ")).join("\n");
+  out.innerHTML=h+actions("tj"); out.hidden=false;
+}
+document.getElementById("tj-go").addEventListener("click",runTJ);
+document.querySelectorAll("#tj input").forEach(el=>el.addEventListener("input",runTJ));
+document.getElementById("tj-occ").addEventListener("click",()=>{tjsys="occ";document.getElementById("tj-occ").classList.add("on");document.getElementById("tj-ori").classList.remove("on");runTJ();});
+document.getElementById("tj-ori").addEventListener("click",()=>{tjsys="ori";document.getElementById("tj-ori").classList.add("on");document.getElementById("tj-occ").classList.remove("on");runTJ();});
+runTJ();
 ["c1","c2","c3"].forEach(run);
 showTab(location.hash.slice(1));
 
