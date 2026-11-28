@@ -5,118 +5,156 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Carrés Magiques</title>
 <meta name="description" content="Calcul de trois carrés magiques à partir d'un nombre.">
-<meta name="theme-color" content="#1f4e3d">
+<meta name="theme-color" content="#0f3d2e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{
-  --bg:#f6f3ea; --card:#ffffff; --ink:#1d2420; --muted:#66706a; --line:#d8d2c2;
-  --brand:#1f4e3d; --brand-ink:#ffffff; --accent:#b8322a; --ok:#1f7a45; --bad:#b8322a;
-  --cell:#fffdf6; --cell-empty:#ece7d8; --allah:#b8322a;
+  --bg:#f3eee3; --card:#fffdf8; --ink:#1b231f; --muted:#6c746e; --line:#e3dccb; --line2:#cfc5ad;
+  --brand:#0f3d2e; --brand2:#17543f; --brand-ink:#ffffff; --gold:#b08a35; --gold-soft:#efe2c2;
+  --accent:#a8322a; --ok:#1d7a47; --bad:#b3332a; --cell:#fffdf8; --cell-empty:#efe8d6; --allah:#a8322a;
+  --gridline:#1b231f; --shadow:0 1px 2px rgba(27,35,31,.06),0 6px 18px rgba(27,35,31,.07);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#121614; --card:#1b211e; --ink:#e9ede9; --muted:#9aa49e; --line:#334039;
-    --brand:#2f7a5e; --brand-ink:#ffffff; --accent:#ff7b6e; --ok:#5fd393; --bad:#ff7b6e;
-    --cell:#202825; --cell-empty:#161b19; --allah:#ff8f84;
+    --bg:#0c110f; --card:#151c19; --ink:#e8ece9; --muted:#97a19b; --line:#25302b; --line2:#34413a;
+    --brand:#0c3326; --brand2:#1a6148; --brand-ink:#ffffff; --gold:#d6b25e; --gold-soft:#2b2617;
+    --accent:#ff8a7d; --ok:#5fd393; --bad:#ff8a7d; --cell:#1a2320; --cell-empty:#111815; --allah:#ff9b8f;
+    --gridline:#7d8a83; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 22px rgba(0,0,0,.35);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#121614; --card:#1b211e; --ink:#e9ede9; --muted:#9aa49e; --line:#334039;
-  --brand:#2f7a5e; --brand-ink:#ffffff; --accent:#ff7b6e; --ok:#5fd393; --bad:#ff7b6e;
-  --cell:#202825; --cell-empty:#161b19; --allah:#ff8f84;
+  --bg:#0c110f; --card:#151c19; --ink:#e8ece9; --muted:#97a19b; --line:#25302b; --line2:#34413a;
+  --brand:#0c3326; --brand2:#1a6148; --brand-ink:#ffffff; --gold:#d6b25e; --gold-soft:#2b2617;
+  --accent:#ff8a7d; --ok:#5fd393; --bad:#ff8a7d; --cell:#1a2320; --cell-empty:#111815; --allah:#ff9b8f;
+  --gridline:#7d8a83; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 22px rgba(0,0,0,.35);
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
-header{background:var(--brand);color:var(--brand-ink);padding:calc(14px + env(safe-area-inset-top)) 16px 0;position:sticky;top:0;z-index:5}
-header h1{margin:0 0 10px;font-size:20px;letter-spacing:.2px}
-nav{display:flex;gap:0;overflow-x:auto;margin:0 -8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-nav::-webkit-scrollbar{display:none}
-nav button{flex:1 0 auto;min-width:0;border:0;background:transparent;color:inherit;opacity:.75;padding:10px 5px 12px;font:inherit;font-size:13px;font-weight:600;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
-nav button[aria-selected="true"]{opacity:1;border-bottom-color:#f5e6b8}
-main{max-width:640px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom))}
-section[hidden]{display:none}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
-.card h2{margin:0 0 4px;font-size:17px}
-.hint{color:var(--muted);font-size:13.5px;margin:0 0 12px;line-height:1.45}
-.inputs{display:grid;gap:10px}
-.inputs.four{grid-template-columns:1fr 1fr}
-label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+.ar{font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif}
 
-input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:1px}
-.btn{margin-top:12px;width:100%;border:0;border-radius:10px;background:var(--brand);color:var(--brand-ink);font:inherit;font-size:16px;font-weight:700;padding:13px;cursor:pointer}
-.err{color:var(--bad);font-size:14px;margin-top:8px;min-height:1em}
-.steps{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0}
-.grid{display:grid;gap:3px;background:var(--ink);border:3px solid var(--ink);border-radius:6px;overflow:hidden;margin:4px 0 10px}
-.grid div{background:var(--cell);display:flex;align-items:center;justify-content:center;flex-direction:column;aspect-ratio:1/1;font-weight:700;font-variant-numeric:tabular-nums;padding:2px;text-align:center;line-height:1.1;overflow:hidden}
-.grid div small{font-size:11px;font-weight:600;color:var(--accent);margin-top:2px}
-.grid div.empty{background:var(--cell-empty)}
-.grid div.allah{color:var(--allah);font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif;font-size:min(5vw,24px)}
-.verdict{font-weight:700;font-size:14.5px}
-.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
-.toggle{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:6px 0 2px;font-weight:500;flex-direction:row}
-.toggle input{width:auto;padding:0;transform:scale(1.25)}
-.actions{display:flex;gap:8px;margin-top:4px}
-.actions .btn{margin-top:0;background:transparent;color:var(--brand);border:1.5px solid var(--brand);padding:10px;font-size:14.5px}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .actions .btn{color:#8fd6b6;border-color:#8fd6b6} }
-input,select,textarea{font:inherit;font-size:20px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--cell);color:var(--ink);width:100%}
-textarea{font-size:17px;resize:vertical}
+/* ---- barre du haut ---- */
+.bar{position:sticky;top:0;z-index:10;color:var(--brand-ink);
+  background:var(--brand) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23d6b25e' stroke-opacity='.14' stroke-width='1'%3E%3Crect x='14' y='14' width='28' height='28'/%3E%3Crect x='14' y='14' width='28' height='28' transform='rotate(45 28 28)'/%3E%3C/g%3E%3C/svg%3E");
+  padding:calc(10px + env(safe-area-inset-top)) 12px 10px;display:flex;align-items:center;gap:6px;min-height:62px;
+  box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.bar .back{border:0;background:transparent;color:inherit;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer;flex:none}
+.bar .back:active{background:rgba(255,255,255,.14)}
+.bar .back[hidden]{display:none}
+.bar .ttl{display:flex;flex-direction:column;min-width:0;padding-left:4px}
+.bar .ttl b{font-size:19px;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .ttl b.ar{font-size:23px;line-height:1.2}
+.bar .ttl span{font-size:14px;color:#e3c47a}
+.bar .ttl span:empty{display:none}
+.bar .chip{margin-left:auto;border:1px solid rgba(227,196,122,.6);color:#e3c47a;border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:800;flex:none}
+.bar .chip:empty{display:none}
+
+main{max-width:680px;margin:0 auto;padding:16px 16px calc(36px + env(safe-area-inset-bottom))}
+section[hidden]{display:none}
+
+/* ---- tableau de bord ---- */
+.hero{text-align:center;padding:12px 8px 20px}
+.hero .seal{width:78px;height:78px;margin:0 auto 10px;display:block}
+.hero h1{margin:0;font-size:25px;letter-spacing:.3px}
+.hero p{margin:2px 0 0;color:var(--gold);font-size:21px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:16px 14px 14px;cursor:pointer;box-shadow:var(--shadow);color:var(--ink);font:inherit;overflow:hidden;min-height:148px;transition:transform .12s}
+.tile:active{transform:scale(.97)}
+.tile::after{content:"";position:absolute;right:-34px;bottom:-34px;width:96px;height:96px;border-radius:50%;background:var(--gold-soft);opacity:.6;z-index:0}
+.tile>*{position:relative;z-index:1}
+.tile svg{width:48px;height:48px;flex:none}
+.tile b{font-size:16.5px;line-height:1.25;margin-top:6px}
+.tile .sub{font-size:14px;color:var(--muted)}
+.tile .size{position:absolute;top:12px;right:12px;font-size:11.5px;font-weight:800;color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:2px 8px}
+.tile.wide{grid-column:1/-1;flex-direction:row;align-items:center;min-height:0;gap:14px;padding:16px}
+.tile.wide .tx{display:flex;flex-direction:column;gap:2px}
+.tile.wide b{margin-top:0}
+
+/* ---- cartes, champs ---- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 12px;font-size:12.5px;text-align:center;color:var(--gold);text-transform:uppercase;letter-spacing:1.3px;font-weight:800}
+.inputs{display:grid;gap:12px}
+.inputs.four{grid-template-columns:1fr 1fr}
+label{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted);font-weight:700;letter-spacing:.2px}
+input,select,textarea{font:inherit;font-size:20px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line2);background:var(--bg);color:var(--ink);width:100%;font-weight:600}
+textarea{font-size:17px;resize:vertical;font-weight:500}
 select{font-size:17px}
-input[dir=rtl],select[dir=rtl],textarea{font-size:18px}
-.card h3{margin:0 0 10px;font-size:16px;text-align:center;color:var(--brand)}
-.hint.center{text-align:center;margin:8px 0 0}
-.res{scroll-margin-top:110px}
-.seg{display:flex;gap:0;border:1.5px solid var(--brand);border-radius:10px;overflow:hidden;margin-bottom:12px}
-.seg button{flex:1;border:0;background:transparent;color:var(--brand);font:inherit;font-weight:700;font-size:14px;padding:10px;cursor:pointer;text-transform:uppercase;letter-spacing:.4px}
-.seg button.on{background:var(--brand);color:var(--brand-ink)}
-.tgrid{display:grid;gap:3px;background:var(--ink);border:3px solid var(--ink);border-radius:6px;overflow:hidden;margin:4px 0}
+input[dir=rtl],select[dir=rtl]{font-size:19px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(176,138,53,.2)}
+.btn{margin-top:14px;width:100%;border:0;border-radius:14px;background:linear-gradient(180deg,var(--brand2),var(--brand));color:var(--brand-ink);font:inherit;font-size:16.5px;font-weight:800;letter-spacing:.3px;padding:15px;cursor:pointer;box-shadow:0 4px 12px rgba(15,61,46,.28)}
+.btn:active{transform:translateY(1px)}
+.err{color:var(--bad);font-size:14px;margin-top:8px;font-weight:600}
+.err:empty{display:none}
+.toggle{display:flex;align-items:center;gap:10px;font-size:14.5px;color:var(--ink);margin:12px 0 0;font-weight:600;flex-direction:row;letter-spacing:0}
+.toggle input{width:20px;height:20px;padding:0;accent-color:var(--brand2);flex:none}
+.seg{display:flex;padding:4px;background:var(--bg);border:1px solid var(--line2);border-radius:14px;margin-bottom:14px}
+.seg button{flex:1;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:800;font-size:13px;padding:10px;cursor:pointer;letter-spacing:.8px;text-transform:uppercase;border-radius:10px}
+.seg button.on{background:var(--brand2);color:var(--brand-ink);box-shadow:0 2px 6px rgba(15,61,46,.3)}
+
+/* ---- calculs ---- */
+.steps{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;line-height:1.75;white-space:pre-wrap;margin:0 0 14px;background:var(--bg);border-left:4px solid var(--gold);border-radius:4px 12px 12px 4px;padding:10px 14px;font-weight:600}
+
+/* ---- grilles ---- */
+.grid,.tgrid{display:grid;gap:2px;background:var(--gridline);border:2.5px solid var(--gridline);border-radius:10px;overflow:hidden;margin:2px 0 12px}
+.grid div,.tgrid .cell{background:var(--cell);display:flex;align-items:center;justify-content:center;flex-direction:column;aspect-ratio:1/1;font-weight:800;font-variant-numeric:tabular-nums;padding:2px;text-align:center;line-height:1.1;overflow:hidden}
+.grid div small{font-size:10.5px;font-weight:700;color:var(--accent);margin-top:3px;opacity:.9}
+.grid div.empty{background:var(--cell-empty)}
+.grid div.allah{color:var(--allah);font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic",serif;font-size:min(5vw,24px);background:var(--cell-empty)}
 .tgrid.c5{grid-template-columns:repeat(5,1fr)}
 .tgrid.c4{grid-template-columns:repeat(4,1fr)}
-.tgrid .cell{background:var(--cell);aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;font-weight:700;font-variant-numeric:tabular-nums;font-size:min(4.6vw,22px);text-align:center;overflow:hidden;line-height:1.15}
+.tgrid .cell{font-size:min(4.6vw,22px);line-height:1.15}
 .tgrid.small .cell{font-size:min(4vw,18px)}
 .tgrid .cell .letter{color:var(--accent);font-size:min(5.4vw,24px);font-family:"Amiri","Noto Naskh Arabic",serif;line-height:1}
 .tgrid .cell .value{font-size:min(3.4vw,15px);margin-top:3px}
-.tgrid .cell.center,.tgrid .cell.blank{background:var(--cell-empty);color:var(--accent);font-size:min(3.2vw,13px);font-weight:600}
+.tgrid .cell.center,.tgrid .cell.blank{background:var(--cell-empty);color:var(--accent);font-size:min(3.2vw,13px);font-weight:700}
 .tgrid .cell.center .letter{font-size:min(4vw,18px)}
 .tgrid .cell.center .value{font-size:min(3vw,12px);word-break:break-word}
-.framed{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"t t t" "l g r" "b b b";gap:6px;align-items:center}
+.framed{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"t t t" "l g r" "b b b";gap:8px;align-items:center}
 .framed .tgrid{grid-area:g;margin:0}
-.side{color:var(--accent);font-weight:700;font-size:16px;text-align:center}
+.side{color:var(--gold);font-weight:700;font-size:18px;text-align:center;font-family:"Amiri","Noto Naskh Arabic",serif}
 .s-top{grid-area:t}.s-bottom{grid-area:b}
 .s-left{grid-area:l;writing-mode:vertical-rl}.s-right{grid-area:r;writing-mode:vertical-rl}
-.kv{font-size:15px;margin:6px 0;line-height:1.6}
-.kv b{color:var(--brand)}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .kv b, :root:not([data-theme="light"]) .card h3{color:#8fd6b6} }
-.instr{line-height:1.8}
-.letters,.pairbox{direction:rtl;font-size:20px;letter-spacing:2px;background:var(--cell);border:1px solid var(--line);border-radius:10px;padding:10px;word-break:break-all;line-height:1.9}
-.pairbox span{display:inline-block;margin:0 4px;padding:2px 4px}
+
+/* ---- résultat ---- */
+.verdict{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:13.5px;border-radius:999px;padding:6px 12px;margin:0 6px 12px 0}
+.verdict.ok{color:var(--ok);background:rgba(29,122,71,.12)} .verdict.bad{color:var(--bad);background:rgba(179,51,42,.12)}
+.actions{display:flex;gap:10px}
+.actions .btn{margin-top:0;background:transparent;color:var(--ink);border:1.5px solid var(--line2);padding:11px;font-size:14.5px;box-shadow:none}
+.kv{font-size:15px;margin:6px 0;line-height:1.65}
+.kv b{color:var(--gold)}
+.instr{line-height:1.9;font-size:16px}
+.letters,.pairbox{direction:rtl;font-size:21px;letter-spacing:2px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;word-break:break-all;line-height:1.9;text-align:center}
+.pairbox span{display:inline-block;margin:2px 3px;padding:2px 6px;border-radius:8px;background:var(--card);border:1px solid var(--line)}
 .blocks{display:flex;gap:10px}
-.blocks>div{flex:1;background:var(--cell);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;direction:rtl;font-size:20px}
-.blocks .lbl{display:block;font-size:12px;color:var(--muted);direction:ltr;margin-bottom:4px}
-.invoc{font-size:18px;line-height:2.1;white-space:pre-wrap;text-align:right}
-.txt{font-size:15px;line-height:1.5;margin:0 0 8px}
-.schema{display:block;max-width:100%;margin:12px auto 0;border-radius:8px}
-footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
+.blocks>div{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;direction:rtl;font-size:21px}
+.blocks .lbl{display:block;font-size:11.5px;color:var(--muted);direction:ltr;margin-bottom:4px;text-transform:uppercase;letter-spacing:.8px;font-weight:700}
+.invoc{font-size:19px;line-height:2.1;white-space:pre-wrap;text-align:right}
+.txt{font-size:15.5px;line-height:1.6;margin:0 0 8px}
+.schema{display:block;max-width:100%;margin:14px auto 0;border-radius:12px}
+#k5-sums,#cp-detailTalib,#cp-detailMatloub,#cp-detailFinal,#zd-nameBlockNote{display:none}
+@media (min-width:560px){ .tiles{grid-template-columns:1fr 1fr 1fr} }
 </style>
 </head>
 <body>
-<header>
-  <h1>Carrés Magiques</h1>
-  <nav role="tablist">
-    <button role="tab" data-tab="c1" aria-selected="true">5×5 Dayane (65)</button>
-    <button role="tab" data-tab="c2" aria-selected="false" dir="ltr">6×6&nbsp;<bdi lang="ar">الله</bdi></button>
-    <button role="tab" data-tab="c3" aria-selected="false">5×5 Askandari</button>
-    <button role="tab" data-tab="k5" aria-selected="false">Khatim 5×5</button>
-    <button role="tab" data-tab="cp" aria-selected="false">Compatibilité</button>
-    <button role="tab" data-tab="mr" aria-selected="false" dir="rtl"><bdi lang="ar">سر المربعات</bdi></button>
-    <button role="tab" data-tab="zd" aria-selected="false">Zodiaque</button>
-  </nav>
+<header class="bar">
+  <button class="back" id="back" aria-label="Retour" hidden><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <div class="ttl"><b id="bar-title">Carrés Magiques</b><span id="bar-sub" class="ar">الأوفاق والخواتم</span></div>
+  <span class="chip" id="bar-chip"></span>
 </header>
 
 <main>
+<!-- ============ ACCUEIL ============ -->
+<section id="home">
+  <div class="hero">
+    <svg class="seal" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="var(--gold)" stroke-width="2.2"><rect x="22" y="22" width="56" height="56" rx="3"/><rect x="22" y="22" width="56" height="56" rx="3" transform="rotate(45 50 50)"/><circle cx="50" cy="50" r="15"/></g><g fill="var(--gold)"><circle cx="50" cy="50" r="4"/></g></svg>
+    <h1>Carrés Magiques</h1>
+    <p class="ar">الأوفاق والخواتم</p>
+  </div>
+  <div class="tiles" id="tiles"></div>
+</section>
 <!-- ============ CARRÉ 1 ============ -->
-<section id="c1">
+<section id="c1" hidden>
   <div class="card">
     <form class="inputs" data-form="c1">
       <label>Nombre<input type="number" inputmode="numeric" name="n" value="16807" min="65" required></label>
@@ -219,7 +257,6 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
     <div class="tgrid c4" id="mr-grid" dir="ltr"></div>
     <div class="kv" id="mr-asmaa"></div>
     <div class="kv instr" id="mr-instructions"></div>
-    <p class="hint" dir="ltr">⚠️ Certains mots de l'instruction manuscrite étaient difficiles à lire avec certitude pour les maisons 3, 5, 11 et 16 (noms d'Allah partiels) — vérifiez ces passages avec votre document.</p>
   </div>
 </section>
 
@@ -245,10 +282,8 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
       <div class="blocks"><div><span class="lbl">Bloc talib</span><span id="zd-finalTalib"></span></div><div><span class="lbl">Bloc matloub</span><span id="zd-finalMatloub"></span></div></div>
     </div>
     <div class="card"><h3>9 rauhane — Talib</h3><div id="zd-rauhaneTalib"></div></div>
-    <div class="card"><h3>9 rauhane — Matloub</h3><div id="zd-rauhaneMatloub"></div>
-      <p class="hint">Chaque nombre ci-dessus est le résultat du calcul (PM + carré − 51) ; le nom du rauhane correspondant à ce nombre doit être cherché dans votre table de référence (nataïdj hurouf).</p></div>
+    <div class="card"><h3>9 rauhane — Matloub</h3><div id="zd-rauhaneMatloub"></div></div>
     <div class="card"><h3>Texte d'invocation (976)</h3>
-      <p class="hint">La partie « 18 noms d'Allah » doit être complétée à la main (nécessite votre table nataïdj hurouf).</p>
       <div id="zd-invocationText" class="invoc" dir="rtl"></div></div>
     <div class="card"><h3>Méthode d'utilisation</h3>
       <p class="txt">Écrire les lettres allumées sur un tissu de la couleur du zodiaque du matloub, mettre de l'huile d'olive dessus, et le jeter sur le feu en faisant les zikr.</p>
@@ -257,8 +292,6 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
     </div>
   </div>
 </section>
-
-<footer>Fonctionne hors ligne une fois installée.</footer>
 </main>
 
 <script>
@@ -294,9 +327,9 @@ function renderVerdict(g,target,opt){
   const nums=g.flat().filter(x=>typeof x==="number");
   const dup=nums.length-new Set(nums).size;
   let h = bad.length===0
-    ? `<p class="verdict ok">✓ Vérifié : les ${sums.length} ${opt.sansDiagonales?"lignes et colonnes":"lignes, colonnes et diagonales"} font ${target}.</p>`
-    : `<p class="verdict bad">✗ ${bad.length} somme(s) différente(s) : ${bad.map(b=>b.name+" = "+b.s).join(", ")}</p>`;
-  if(dup>0 && !opt.sansDoublons) h+=`<p class="hint">Attention : ${dup} nombre(s) répété(s) dans le carré.</p>`;
+    ? `<p class="verdict ok">✓ ${target}</p>`
+    : `<p class="verdict bad">✗ ${bad.map(b=>b.name+" = "+b.s).join(" · ")}</p>`;
+  if(dup>0 && !opt.sansDoublons) h+=`<p class="verdict bad">${dup} nombre(s) répété(s)</p>`;
   return h;
 }
 function shareText(title,g,target){
@@ -364,8 +397,7 @@ function calc2cahier(N){
   const valOf=o=>Q+o-1+(R&&C2.includes(o)?R:0);
   const g=T.map(r=>r.map(o=>o===A?ALLAH:valOf(o)));
   const labels=T.map(r=>r.map(o=>o===A?"":String(o)));
-  let steps=`${N} − 46 = ${D}\n${D} ÷ 4 = ${Q}\nR = ${R}\n\nCase n°1 = ${Q}, puis +1 à chaque case jusqu'à n°24.`;
-  if(R) steps+=`\nReste ${R} : +${R} aux cases n° ${C2.join(", ")}.`;
+  const steps=`${N} − 46 = ${D}\n${D} ÷ 4 = ${Q}\nR = ${R}`;
   return {g,labels,steps,target:N,title:`6×6 الله — ${N}`};
 }
 function calc2(N, mode){
@@ -405,7 +437,7 @@ function calc3(a){
   const total=a.reduce((x,y)=>x+y,0);
   const circ=["①","②","③","④"];
   const steps=a.map((x,i)=>`${circ[i]} ${x} ÷ 4 = ${p[i]}  → P${i+1} = ${p[i]}\n   ${p[i]}×3 + R(${r[i]}) = ${s[i]}  → S${i+1} = ${s[i]}`).join("\n")
-    +`\n\nSomme magique = ${a.join(" + ")} = ${total}`;
+    +`\n\n${a.join(" + ")} = ${total}`;
   return {g,labels,steps,target:total,title:`5×5 Askandari — ${a.join(", ")}`};
 }
 
@@ -444,14 +476,58 @@ document.addEventListener("click",async e=>{
     else { try{await navigator.clipboard.writeText(t); s.textContent="Copié ✓"; setTimeout(()=>s.textContent="Partager",1500);}catch(_){} } }
 });
 
-/* onglets */
-function showTab(id){
-  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===id));
-  document.querySelectorAll("main section").forEach(s=>s.hidden=s.id!==id);
-  const tb=document.querySelector(`nav button[data-tab="${id}"]`); if(tb&&tb.scrollIntoView) tb.scrollIntoView({block:"nearest",inline:"center"});
-  try{localStorage.setItem("cm-tab",id);}catch(_){}
+/* navigation : tableau de bord → écran du khatim */
+const KHAWATIM=[
+  {id:"c1",t:"Dayane (65)",size:"5×5",n:5,mark:[[0,2],[1,1],[3,3],[4,2],[2,0],[2,4]],empty:[[2,2]]},
+  {id:"c2",t:"الله",size:"6×6",n:6,mark:[[0,0],[0,5],[5,0],[5,5],[1,2],[1,3],[4,2],[4,3],[2,1],[3,1],[2,4],[3,4]]},
+  {id:"c3",t:"Askandari",size:"5×5",n:5,mark:[[0,0],[0,4],[4,0],[4,4]],empty:[[2,2]]},
+  {id:"k5",t:"Khatim 5×5",size:"5×5",n:5,mark:[[0,0],[1,1],[3,3],[4,4],[0,4],[4,0]],empty:[[2,2]]},
+  {id:"cp",t:"Compatibilité",size:"4×4",ar:"طالب · مطلوب",n:4,mark:[[0,0],[1,1],[2,2],[3,3]]},
+  {id:"mr",t:"سر المربعات",size:"4×4",ar:"16 بيتاً",n:4,mark:[[1,2],[2,1]],empty:[[0,3]]},
+  {id:"zd",t:"Zodiaque",ar:"طالب · مطلوب",zod:true},
+];
+const AR_RE=/[؀-ۿ]/;
+function motif(k){
+  const G="var(--gold)",B="var(--brand2)";
+  if(k.zod){
+    let t="";
+    for(let i=0;i<12;i++){const a=i*Math.PI/6;
+      t+=`<line x1="${(24+14*Math.cos(a)).toFixed(1)}" y1="${(24+14*Math.sin(a)).toFixed(1)}" x2="${(24+21*Math.cos(a)).toFixed(1)}" y2="${(24+21*Math.sin(a)).toFixed(1)}"/>`;}
+    return `<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="${G}" stroke-width="2"><circle cx="24" cy="24" r="21"/><circle cx="24" cy="24" r="10"/>${t}</g><circle cx="24" cy="24" r="4" fill="${B}"/></svg>`;
+  }
+  const n=k.n,s=44/n;let r="";
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    const m=(k.mark||[]).some(c=>c[0]===i&&c[1]===j), e=(k.empty||[]).some(c=>c[0]===i&&c[1]===j);
+    r+=`<rect x="${(3+j*s).toFixed(1)}" y="${(3+i*s).toFixed(1)}" width="${(s-2).toFixed(1)}" height="${(s-2).toFixed(1)}" rx="1.5" fill="${e?"none":m?B:G}" fill-opacity="${e?0:m?1:.3}" stroke="${e?G:"none"}" stroke-width="1.2"/>`;
+  }
+  return `<svg viewBox="0 0 48 48" aria-hidden="true">${r}</svg>`;
 }
-document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+const tilesEl=document.getElementById("tiles");
+KHAWATIM.forEach((k,i)=>{
+  const b=document.createElement("button");
+  const wide = i===KHAWATIM.length-1 && KHAWATIM.length%2===1;
+  b.className="tile"+(wide?" wide":"");
+  const name = AR_RE.test(k.t) ? `<b class="ar" dir="rtl" style="font-size:22px">${k.t}</b>` : `<b>${k.t}</b>`;
+  const sub = k.ar ? `<span class="sub ar" dir="rtl">${k.ar}</span>` : "";
+  const size = k.size ? `<span class="size">${k.size}</span>` : "";
+  b.innerHTML = wide ? `${motif(k)}<span class="tx">${name}${sub}</span>${size}` : `${size}${motif(k)}${name}${sub}`;
+  b.addEventListener("click",()=>{ location.hash=k.id; });
+  tilesEl.appendChild(b);
+});
+function showTab(id){
+  const k=KHAWATIM.find(x=>x.id===id);
+  if(!k) id="home";
+  document.querySelectorAll("main section").forEach(s=>s.hidden=s.id!==id);
+  document.getElementById("back").hidden = id==="home";
+  document.querySelector(".bar .ttl").style.visibility = id==="home" ? "hidden" : "";
+  const tt=document.getElementById("bar-title"), st=document.getElementById("bar-sub"), ch=document.getElementById("bar-chip");
+  if(k){ tt.textContent=k.t; tt.className=AR_RE.test(k.t)?"ar":""; st.textContent=k.ar||""; ch.textContent=k.size||""; }
+  else { tt.textContent="Carrés Magiques"; tt.className=""; st.textContent="الأوفاق والخواتم"; ch.textContent=""; }
+  window.scrollTo(0,0);
+}
+let navDepth=0;
+window.addEventListener("hashchange",()=>{ const id=location.hash.slice(1); if(id) navDepth++; else navDepth=0; showTab(id); });
+document.getElementById("back").addEventListener("click",()=>{ if(navDepth>0){ navDepth--; history.back(); } else { location.hash=""; } });
 
 /* mémoriser les derniers nombres saisis */
 function save(){
@@ -463,9 +539,9 @@ function save(){
 try{
   const d=JSON.parse(localStorage.getItem("cm-inputs")||"{}");
   document.querySelectorAll("[data-form] input").forEach(i=>{const k=i.closest("[data-form]").dataset.form+"."+i.name;if(d[k])i.value=d[k];});
-  const t=localStorage.getItem("cm-tab"); if(t&&document.getElementById(t)) showTab(t);
 }catch(_){}
 ["c1","c2","c3"].forEach(run);
+showTab(location.hash.slice(1));
 
 /* hors ligne (PWA) */
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){

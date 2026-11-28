@@ -10,8 +10,8 @@ android {
         applicationId = "com.carresmagiques.app"
         minSdk = 21
         targetSdk = 34
-        versionCode = 9
-        versionName = "1.8.0"
+        versionCode = 10
+        versionName = "2.0.0"
     }
     buildTypes {
         release { isMinifyEnabled = false }
