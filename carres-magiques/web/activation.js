@@ -56,6 +56,10 @@ async function inscrire(raw){
     });
     if(r.ok) return "ok";
     if(r.status===409) return "deja";
+    /* Firestore pas encore activé sur le projet : activation locale (un code par appareil).
+       Dès que la base et les règles sont en place, le contrôle en ligne s'applique seul. */
+    let txt=""; try{ txt=await r.text(); }catch(_){}
+    if(/SERVICE_DISABLED|has not been used in project|does not exist for project/i.test(txt)) return "hors-service";
     return "refuse";
   }catch(_){ return "reseau"; }
   finally{ clearTimeout(t); }
@@ -72,7 +76,7 @@ async function tryCode(){
   busy=true; btn.disabled=true; btn.textContent="Vérification…"; err.textContent="";
   const res=await inscrire(raw);
   busy=false; btn.disabled=false; btn.textContent="Activer";
-  if(res==="ok"){ used.push(h); set(USED,JSON.stringify(used)); set(KEY,h); unlock(); return; }
+  if(res==="ok"||res==="hors-service"){ used.push(h); set(USED,JSON.stringify(used)); set(KEY,h); unlock(); return; }
   if(res==="deja"){ used.push(h); set(USED,JSON.stringify(used)); err.textContent="Ce code a déjà été utilisé."; return; }
   if(res==="reseau"){ err.textContent="Connexion internet nécessaire pour activer."; return; }
   err.textContent="Activation refusée. Réessayez plus tard.";
