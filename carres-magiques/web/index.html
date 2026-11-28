@@ -95,7 +95,9 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
     <form class="inputs" data-form="c2">
       <label>Nombre<input type="number" inputmode="numeric" name="n" value="1382" min="100" required></label>
     </form>
-    <label class="toggle"><input type="checkbox" data-order="c2"> Afficher le numéro d'ordre des cases</label>
+    <label class="toggle"><input type="radio" name="m2" value="cahier" data-order="c2" checked> Méthode du cahier</label>
+    <label class="toggle"><input type="radio" name="m2" value="corrigee" data-order="c2"> Méthode corrigée (diagonales justes)</label>
+    <label class="toggle"><input type="checkbox" data-order="c2" data-lab="c2"> Afficher le numéro d'ordre des cases</label>
     <button class="btn" data-go="c2">Calculer</button>
     <div class="err" data-err="c2"></div>
   </div>
@@ -155,7 +157,7 @@ function renderVerdict(g,target){
   let h = bad.length===0
     ? `<p class="verdict ok">✓ Vérifié : les ${sums.length} lignes, colonnes et diagonales font ${target}.</p>`
     : `<p class="verdict bad">✗ ${bad.length} somme(s) différente(s) : ${bad.map(b=>b.name+" = "+b.s).join(", ")}</p>`;
-  if(dup>0) h+=`<p class="hint">Attention : ${dup} nombre(s) répété(s) dans le carré (nombre de départ trop petit).</p>`;
+  if(dup>0) h+=`<p class="hint">Attention : ${dup} nombre(s) répété(s) dans le carré.</p>`;
   return h;
 }
 function shareText(title,g,target){
@@ -208,7 +210,25 @@ const T2=[
    On les augmente de R+4m et on baisse la première case de m :
    chaque ligne gagne alors exactement R, et tous les nombres restent différents. */
 const G2=[14,15,17,20,23,24];
-function calc2(N){
+/* Méthode du cahier (relevée sur les exemples 787 et 1680) :
+   R = 0 : les cases n°18 et n°23 changent de place ;
+   R = 1, 2, 3 : on ajoute R aux cases n° 5, 13, 14, 15, 19, 24
+   (notées « −R case 16, case 20 » dans le cahier). */
+const C2=[5,13,14,15,19,24];
+function calc2cahier(N){
+  if(!Number.isInteger(N)||N<50) throw "Entrez un nombre entier plus grand (au moins 50).";
+  const D=N-46, Q=Math.floor(D/4), R=D%4;
+  const T=T2.map(r=>r.map(o=> R===0 && o===18 ? 23 : R===0 && o===23 ? 18 : o));
+  const valOf=o=>Q+o-1+(R&&C2.includes(o)?R:0);
+  const g=T.map(r=>r.map(o=>o===A?ALLAH:valOf(o)));
+  const labels=T.map(r=>r.map(o=>o===A?"":"n°"+o));
+  let steps=`${N} − 46 = ${D}\n${D} ÷ 4 = ${Q}\nR = ${R}\n\nCase n°1 = ${Q}, puis +1 à chaque case jusqu'à n°24.`;
+  if(R===0) steps+=`\nR = 0 : les cases n°18 et n°23 changent de place.`;
+  else steps+=`\nReste ${R} : +${R} aux cases n° ${C2.join(", ")}.`;
+  return {g,labels,steps,target:N,title:`Carré 2 — ${N}`};
+}
+function calc2(N, mode){
+  if(mode==="cahier") return calc2cahier(N);
   if(!Number.isInteger(N)||N<46+4*1) throw "Entrez un nombre entier plus grand (au moins 50).";
   const D=N-46, Q=Math.floor(D/4), R=D%4;
   let m=0, base=Q, bump=0;
@@ -252,14 +272,15 @@ function calc3(a){
 /* ---------- interface ---------- */
 const calcs={
   c1:f=>calc1(+f.n.value),
-  c2:f=>calc2(+f.n.value),
+  c2:f=>calc2(+f.n.value,(document.querySelector('input[name="m2"]:checked')||{}).value||"cahier"),
   c3:f=>calc3([+f.a1.value,+f.a2.value,+f.a3.value,+f.a4.value]),
 };
 function run(id){
   const form=document.querySelector(`[data-form="${id}"]`);
   const out=document.querySelector(`[data-out="${id}"]`);
   const err=document.querySelector(`[data-err="${id}"]`);
-  const showLab = id==="c1" ? true : !!document.querySelector(`[data-order="${id}"]`)?.checked;
+  const labBox = document.querySelector(`[data-lab="${id}"]`) || document.querySelector(`input[type=checkbox][data-order="${id}"]`);
+  const showLab = id==="c1" ? true : !!(labBox && labBox.checked);
   err.textContent="";
   try{
     const r=calcs[id](form);
