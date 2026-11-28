@@ -247,6 +247,9 @@ html.locked body>header, html.locked body>main{display:none}
       <label>Damir (ضمير)<input type="number" inputmode="numeric" id="k3-damir" value="1652"></label>
       <label>Nom (اسم)<input type="text" id="k3-nom" value="129" placeholder="129 ou لطيف"></label>
     </div>
+    <div class="inputs" style="margin-top:12px">
+      <label>Demande (كذا وكذا)<textarea id="k3-demande" dir="rtl" rows="2" placeholder="كذا وكذا"></textarea></label>
+    </div>
     <div class="err" id="k3-err"></div>
     <button class="btn" id="k3-go">Calculer</button>
   </div>
@@ -618,8 +621,9 @@ function valeurNom(t){
   for(const ch of t){ if(tb[ch]!==undefined){v+=tb[ch];n++;} }
   return n?v:NaN;
 }
-/* Versets entourant le carré : Yā-Sīn 36:81-82, texte Uthmani (Hafs) exact — haut, gauche, bas, droite */
-const VERSET=["أَوَلَيْسَ ٱلَّذِى خَلَقَ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضَ بِقَٰدِرٍ", "عَلَىٰٓ أَن يَخْلُقَ مِثْلَهُم ۚ بَلَىٰ", "وَهُوَ ٱلْخَلَّٰقُ ٱلْعَلِيمُ ﴿٨١﴾ إِنَّمَآ أَمْرُهُۥٓ إِذَآ أَرَادَ شَيْـًٔا", "أَن يَقُولَ لَهُۥ كُن فَيَكُونُ ﴿٨٢﴾"];
+/* Versets entourant le carré : Yā-Sīn 36:81-82 (texte Uthmani), où « يَخْلُقَ مِثْلَهُم » est remplacé par
+   « يَفْعَلَ لِي » + la demande (كذا وكذا), à la demande de l'utilisateur — haut, gauche, bas, droite */
+const VERSET=["أَوَلَيْسَ ٱلَّذِى خَلَقَ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضَ بِقَٰدِرٍ", "عَلَىٰٓ أَن يَفْعَلَ لِي {demande} ۚ بَلَىٰ", "وَهُوَ ٱلْخَلَّٰقُ ٱلْعَلِيمُ ﴿٨١﴾ إِنَّمَآ أَمْرُهُۥٓ إِذَآ أَرَادَ شَيْـًٔا", "أَن يَقُولَ لَهُۥ كُن فَيَكُونُ ﴿٨٢﴾"];
 function calcK3(D,s){
   if(!Number.isInteger(D)||D<9) throw "Entrez le Damir (nombre entier).";
   if(!Number.isInteger(s)||s<1) throw "Entrez le Nom (nombre ou nom en arabe).";
@@ -635,14 +639,17 @@ function runK3(){
     const r=calcK3(D,s);
     const stat=(l,v)=>`<div class="stat"><span>${l}</span><b>${v}</b></div>`;
     let h=`<div class="stats">${stat("Damir",D)}${stat("Nom",s)}${stat("Centre",r.c)}${stat("Reste",r.R)}</div>`;
-    h+=`<div class="frame3" lang="ar"><span class="v vt">${VERSET[0]}</span><span class="v vl">${VERSET[1]}</span><div class="g3">`;
+    const dem=(document.getElementById("k3-demande").value.trim().replace(/\s+/g," "))||"كذا وكذا";
+    const V=VERSET.map(x=>x.replace("{demande}",dem));
+    h+=`<div class="frame3" lang="ar"><span class="v vt">${esc(V[0])}</span><span class="v vl">${esc(V[1])}</span><div class="g3">`;
     r.g.forEach((row,i)=>row.forEach((v,j)=>{ h+=`<div class="${i===1&&j===1?"mid":""}">${v}</div>`; }));
-    h+=`</div><span class="v vr">${VERSET[3]}</span><span class="v vb">${VERSET[2]}</span></div>`;
-    lastText.k3=`المجاذب — Damir ${D}, Nom ${s}\nCentre ${r.c}, Reste ${r.R}\n\n`+r.g.map(x=>x.join("  ")).join("\n")+"\n\n"+VERSET.join(" ");
+    h+=`</div><span class="v vr">${esc(V[3])}</span><span class="v vb">${esc(V[2])}</span></div>`;
+    lastText.k3=`المجاذب — Damir ${D}, Nom ${s}\nCentre ${r.c}, Reste ${r.R}\n\n`+r.g.map(x=>x.join("  ")).join("\n")+"\n\n"+V.join(" ");
     out.innerHTML=h+actions("k3"); out.hidden=false;
   }catch(e){ err.textContent=typeof e==="string"?e:"Erreur de calcul."; out.hidden=true; }
 }
 document.getElementById("k3-go").addEventListener("click",runK3);
+document.getElementById("k3-demande").addEventListener("input",runK3);
 ["k3-damir","k3-nom"].forEach(id=>document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();runK3();}}));
 document.getElementById("k3-occ").addEventListener("click",()=>{k3sys="occ";document.getElementById("k3-occ").classList.add("on");document.getElementById("k3-ori").classList.remove("on");runK3();});
 document.getElementById("k3-ori").addEventListener("click",()=>{k3sys="ori";document.getElementById("k3-ori").classList.add("on");document.getElementById("k3-occ").classList.remove("on");runK3();});
