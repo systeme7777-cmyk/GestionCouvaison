@@ -205,11 +205,6 @@ const T2=[
   [24,1, A, A, 7,18],
   [A,19, 8,17, 6, A],
 ];
-/* Pour un reste R ≠ 0 : les 6 cases d'ordre 14,15,17,20,23,24 forment une
-   « transversale » (exactement une case par ligne, colonne et diagonale).
-   On les augmente de R+4m et on baisse la première case de m :
-   chaque ligne gagne alors exactement R, et tous les nombres restent différents. */
-const G2=[14,15,17,20,23,24];
 /* Méthode du cahier (relevée sur les exemples 787 et 1680) :
    R = 0 : les cases n°18 et n°23 changent de place ;
    R = 1, 2, 3 : on ajoute R aux cases n° 5, 13, 14, 15, 19, 24
@@ -231,20 +226,19 @@ function calc2(N, mode){
   if(mode==="cahier") return calc2cahier(N);
   if(!Number.isInteger(N)||N<46+4*1) throw "Entrez un nombre entier plus grand (au moins 50).";
   const D=N-46, Q=Math.floor(D/4), R=D%4;
-  let m=0, base=Q, bump=0;
-  const valOf=(o)=>base+o-1+(R&&G2.includes(o)?bump:0);
-  if(R){
-    for(m=0;m<=6;m++){
-      base=Q-m; bump=R+4*m;
-      const vals=[];for(let o=1;o<=24;o++)vals.push(valOf(o));
-      if(new Set(vals).size===24) break;
-    }
-  }
+  /* La case n°1 reste toujours égale à Q. Pour un reste R, deux groupes de 6 cases
+     (chacun : une case par ligne, colonne et diagonale) sont ajustés :
+     +plus sur le groupe P, −moins sur le groupe M, avec plus − moins = R. */
+  const ADJ={
+    1:{plus:11,moins:10,P:[2,11,16,18,19,22],M:[3,4,7,8,10,13]},
+    2:{plus:9, moins:7, P:[10,12,17,18,21,22],M:[2,5,7,9,14,19]},
+    3:{plus:11,moins:8, P:[8,10,11,22,23,24],M:[5,7,13,16,19,21]},
+  }[R];
+  const valOf=o=>Q+o-1+(ADJ? (ADJ.P.includes(o)?ADJ.plus:0)-(ADJ.M.includes(o)?ADJ.moins:0) : 0);
   const g=T2.map(r=>r.map(o=>o===A?ALLAH:valOf(o)));
   const labels=T2.map(r=>r.map(o=>o===A?"":"n°"+o));
-  let steps=`${N} − 46 = ${D}\n${D} ÷ 4 = ${Q}\nR = ${R}`;
-  if(R===0) steps+=`\n\nCase n°1 = ${Q}, puis +1 à chaque case jusqu'à n°24.`;
-  else steps+=`\n\nCase n°1 = ${base}${m?` (${Q} − ${m})`:""}, puis +1 à chaque case.\nReste ${R} : on ajoute ${bump} aux cases n° ${G2.join(", ")}\n(une case par ligne, colonne et diagonale).`;
+  let steps=`${N} − 46 = ${D}\n${D} ÷ 4 = ${Q}\nR = ${R}\n\nCase n°1 = ${Q}, puis +1 à chaque case jusqu'à n°24.`;
+  if(ADJ) steps+=`\nReste ${R} :\n  +${ADJ.plus} aux cases n° ${ADJ.P.join(", ")}\n  −${ADJ.moins} aux cases n° ${ADJ.M.join(", ")}\n(chaque ligne, colonne et diagonale gagne ${R}).`;
   return {g,labels,steps,target:N,title:`Carré 2 — ${N}`};
 }
 
